@@ -43,6 +43,11 @@ namespace MinSurface
         List<System.Numerics.Complex> _domain;
         Boolean _parallel;
 
+        private struct LaplaceData {
+            public double a0;
+            public double[] an;
+            public double[] bn;
+        }
 
 
         public MinSurfaceComponent()
@@ -191,12 +196,13 @@ namespace MinSurface
             // ok, let's get the coefficients
             List<double> xs = _targetPoints.Select(o => o.X).ToList();// 1 ms
             MathNet.Numerics.LinearAlgebra.Vector<double> betax = solveLaplace(xs); // 8 ms
-
+            LaplaceData kx = solveLaplace2(xs);
             List<double> ys = _targetPoints.Select(o => o.Y).ToList();
             MathNet.Numerics.LinearAlgebra.Vector<double> betay = solveLaplace(ys);
-
+            LaplaceData ky = solveLaplace2(ys);
             List<double> zs = _targetPoints.Select(o => o.Z).ToList();
             MathNet.Numerics.LinearAlgebra.Vector<double> betaz = solveLaplace(zs);
+            LaplaceData kkz = solveLaplace2(zs);
 
             System.Numerics.Complex weier = new System.Numerics.Complex(Math.Cos(_weierstrassAngle), Math.Sin(_weierstrassAngle));
             // now, apply the real parts of the complex polynomials to the mesh to obtain the three transformed coordinates
@@ -210,9 +216,17 @@ namespace MinSurface
                 {
                     System.Numerics.Complex z = new System.Numerics.Complex(_domainMesh.Vertices[ii].X, _domainMesh.Vertices[ii].Y);
                     double newx = (weier * evalPolynomial(betax, z)).Real;
+                    double newx2 = evalPolynomial2(kx, z);
+                    var d1 = newx2 / newx;
+                    Console.WriteLine(newx2 / newx);
                     double newy = (weier * evalPolynomial(betay, z)).Real;
+                    double newy2 = evalPolynomial2(ky, z);
+                    var d2 = newy2 / newy;
+
                     double newz = (weier * evalPolynomial(betaz, z)).Real;
-                    _outputMesh.Vertices.SetVertex(ii, newx, newy, newz);
+                    double newz2 = evalPolynomial2(kkz, z);
+                    var d3 = newz2 / newz;
+                    _outputMesh.Vertices.SetVertex(ii, newx2, newy2, newz2);
                 }
             }
             else
@@ -428,6 +442,30 @@ namespace MinSurface
             return X.QR().Solve(Y);
         }
 
+        private double evalPolynomial2(LaplaceData k, System.Numerics.Complex z) {
+            var r = z.Magnitude;
+            var theta = Math.Atan2(z.Imaginary, z.Real);
+            return k.a0 + Enumerable.Range(1, _degree).Sum(i => Math.Pow(r, i) * (k.an[i] * Math.Cos(i * theta) + k.bn[i] * Math.Sin(i * theta)));
+        }
+
+
+        // solves the equation Laplace(u) = 0 on the unit disk, 
+        private LaplaceData solveLaplace2(List<double> targets)
+        {
+            var k = new LaplaceData();
+            k.a0 = targets.Sum() / 2.0 / Math.PI;
+            k.an = new double[_degree+1];
+            k.bn = new double[_degree+1];
+
+            for (int i = 1; i < _degree; i++) {
+                k.an[i] = targets.Select((double v, int ii) => v * Math.Cos((double) i * (double) ii / targets.Count * 2 * Math.PI)).Sum() / Math.PI;
+                k.bn[i] = targets.Select((double v, int ii) => v * Math.Sin((double) i * (double) ii / targets.Count * 2 * Math.PI)).Sum() / Math.PI;
+            }
+
+            return k;
+        }
+
+        
 
         public void Init(Curve tc, int k, Double a, myMeshType mt, Double rotAngle, Mesh M, Boolean suppressParallel)
         {
