@@ -485,7 +485,7 @@ namespace MinSurface
                     var meshParams = MeshingParameters.Default;
                     meshParams.MaximumEdgeLength = Math.Sqrt(Math.PI / _nrVert);
                     Curve _domainCurve = new ArcCurve(new Circle(1.0));
-                    _domainMesh = Mesh.CreateFromPlanarBoundary(_domainCurve, meshParams);
+                    _domainMesh = Mesh.CreateFromPlanarBoundary(_domainCurve, meshParams, .0001);
                     break;
 
                 case myMeshType.cobweb:
