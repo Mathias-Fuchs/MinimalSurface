@@ -66,8 +66,8 @@ namespace MinSurface
             // can obviously be parallelized
             for (int i = 1; i < degree; i++)
             {
-                var g1i = targets1.Select((double v, int ii) => 2.0 * v * Math.Cos((double)(i * ii) / (double) targets1.Count * 2.0 * Math.PI)).Average();
-                var g2i = targets2.Select((double v, int ii) => 2.0 * v * Math.Cos((double)(i * ii) / (double) targets2.Count * 2.0 * Math.PI)).Average();
+                var g1i = targets1.Select((double v, int ii) => 2.0 * v * Math.Cos((double)(i * ii) / (double)targets1.Count * 2.0 * Math.PI)).Average();
+                var g2i = targets2.Select((double v, int ii) => 2.0 * v * Math.Cos((double)(i * ii) / (double)targets2.Count * 2.0 * Math.PI)).Average();
                 var det = Math.Pow(R1 / R2, i) - Math.Pow(R2 / R1, i);
                 this.an[i] = 1.0 / det * (Math.Pow(R2, -i) * g1i - Math.Pow(R1, -i) * g2i);
                 this.bn[i] = 1.0 / det * (-Math.Pow(R2, i) * g1i + Math.Pow(R1, i) * g2i);
@@ -126,9 +126,12 @@ namespace MinSurface
     "This parameter is the only required one, all others are optional.", GH_ParamAccess.item);
 
             //5
-            pManager.AddIntegerParameter("Approximate number of vertices", "appNrVertices", "approximate number" +
-                " of vertices of the output mesh. The actual number of vertices may be slightly higher." +
-                "The default to 1000.", GH_ParamAccess.item, 1000);
+            pManager.AddNumberParameter("Mesh density", "density", "density of the mesh. 0.0 is coarse, 1.0 is very dense. The lower, the faster.", GH_ParamAccess.item, .9);
+
+            pManager.AddIntegerParameter("Degree (optional)", "degree", "degree of the surface. optional.", GH_ParamAccess.item, 0);
+
+
+
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
@@ -140,18 +143,16 @@ namespace MinSurface
             Curve tc = null;
             Curve tc2 = null;
 
-            // the number of vertices
-            int k = 1000;
+            double k = 0.9;
+            int degree = 0;
 
             DA.GetData(0, ref tc);
             DA.GetData(1, ref tc2);
             DA.GetData(2, ref k);
+            DA.GetData(3, ref degree);
 
-
-
-            if (tc == null || !tc.IsValid || !tc.IsClosed) { this.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "first input curve unvalid or not closed."); return; }
-            if (tc2 == null || !tc2.IsValid || !tc2.IsClosed) { this.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "second input curve unvalid or not closed."); return; }
-
+            if (tc == null || !tc.IsValid || !tc.IsClosed) { this.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "First input curve is either unvalid or not closed!"); return; }
+            if (tc2 == null || !tc2.IsValid || !tc2.IsClosed) { this.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Second input curve is either unvalid or not closed!"); return; }
 
             Curve _targetCurve = tc;
             Curve _targetCurve2 = tc2;
@@ -188,7 +189,12 @@ namespace MinSurface
             //  number of boundary subdivisions
             int _n2 = 23 * _degree2;
 
-
+            int deg;
+            if (degree == 0)
+            {
+                deg = Math.Max(_degree, _degree2);
+            }
+            else deg = degree;
 
 
 
@@ -198,28 +204,45 @@ namespace MinSurface
 
             double[] t2 = _targetCurve2.DivideByCount(_n2, true);
             var _targetPoints2 = new List<Point3d>();
-            for (int i = 0; i < _n2; i++) _targetPoints2.Add(_targetCurve2.PointAt(t[i]));
+
+            for (int i = 0; i < _n2; i++)
+                _targetPoints2.Add(_targetCurve2.PointAt(t2[i]));
+
+            double R1 = 0.5;
+            double R2 = 1.5;
 
             // now, do the actual work and compute the three complex polynomials
             // ok, let's get the coefficients
-            List<double> xs = _targetPoints.Select(o => o.X).ToList();// 1 ms
-            LaplaceData kx = new LaplaceData(xs, _degree);
-            List<double> ys = _targetPoints.Select(o => o.Y).ToList();
-            LaplaceData ky = new LaplaceData(ys, _degree);
-            List<double> zs = _targetPoints.Select(o => o.Z).ToList();
-            LaplaceData kkz = new LaplaceData(zs, _degree);
+            List<double> xs1 = _targetPoints.Select(o => o.X).ToList();// 1 ms
+            List<double> xs2 = _targetPoints2.Select(o => o.X).ToList();// 1 ms
+                                                                        //        LaplaceData kx = new LaplaceData(xs1, deg); <-- if it's just one curve
+            AnnularLaplaceData akx = new AnnularLaplaceData(xs1, R1, xs2, R2, deg);
 
-            var _domainMesh = Mesh.CreateFromPlanarBoundary((new Circle(1.0)).ToNurbsCurve(), new MeshingParameters(), .001);
-            
+            List<double> ys1 = _targetPoints.Select(o => o.Y).ToList();// 1 ms
+            List<double> ys2 = _targetPoints2.Select(o => o.Y).ToList();// 1 ms
+                                                                        //       LaplaceData ky = new LaplaceData(ys1, deg);
+            AnnularLaplaceData aky = new AnnularLaplaceData(ys1, R1, ys2, R2, deg);
+
+            List<double> zs1 = _targetPoints.Select(o => o.Z).ToList();// 1 ms
+            List<double> zs2 = _targetPoints2.Select(o => o.Z).ToList();// 1 ms
+                                                                        //       LaplaceData kkz = new LaplaceData(zs1, deg);
+            AnnularLaplaceData akkz = new AnnularLaplaceData(zs1, R1, zs2, R2, deg);
+
+            var cl = new Rhino.Collections.CurveList();
+            cl.Add(new Circle(R1).ToNurbsCurve());
+            cl.Add(new Circle(R2).ToNurbsCurve());
+
+            var b = Brep.CreatePlanarBreps(cl, .001);
+            var _domainMesh = Mesh.CreateFromBrep(b[0], new MeshingParameters(k))[0];
 
             // this loop takes 170ms for 10000 vertices ... so, it is the bottleneck of the entire procedure
             // so it's worth to parallelize it
             for (int ii = 0; ii < _domainMesh.Vertices.Count; ii++)
             {
                 var p = new Point2d(_domainMesh.Vertices[ii].X, _domainMesh.Vertices[ii].Y);
-                double newx2 = kx.eval(p);
-                double newy2 = ky.eval(p); // evalPolynomial2(ky, p);  <-- maybe it's faster because it will be inlined?
-                double newz2 = kkz.eval(p); // evalPolynomial2(kkz, p);
+                double newx2 = akx.eval(p);
+                double newy2 = aky.eval(p); // evalPolynomial2(ky, p);  <-- maybe it's faster because it will be inlined?
+                double newz2 = akkz.eval(p); // evalPolynomial2(kkz, p);
                 _domainMesh.Vertices.SetVertex(ii, newx2, newy2, newz2);
             }
             DA.SetData(0, _domainMesh);
