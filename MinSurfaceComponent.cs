@@ -129,7 +129,7 @@ namespace MinSurface
             pManager.AddAngleParameter("Rotation angle of one of the curves around itself (optional)", "roationAngle", "rotation angle of the curves around itself", GH_ParamAccess.item, 0);
 
             pManager.AddBooleanParameter("Flip one curve (optional)", "flip", "flip one curve? try this to prevent self-intersection.", GH_ParamAccess.item, false);
-
+            
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
@@ -145,7 +145,7 @@ namespace MinSurface
             int degree = 0;
             double angle = 0;
             bool flip = false;
-            
+
             DA.GetData(0, ref tc);
             DA.GetData(1, ref tc2);
             DA.GetData(2, ref vertical);
@@ -160,58 +160,29 @@ namespace MinSurface
             Curve _targetCurve = tc;
             Curve _targetCurve2 = tc2;
 
-
-
-
             // number of control points, tells about the complexity of the curve
             int nrCont = _targetCurve.ToNurbsCurve().Points.Count;
-
-            // the degree of the curve
             int crDeg = _targetCurve.Degree;
 
             int idealDegree = nrCont * crDeg;
-
-            // Chosen degree of complex analytic polynomials
-            // we cap the degree to lie within 15 and 75 ... anything beyond would me meaningless
             int _degree = Math.Min(Math.Max(10, idealDegree), 50);
 
             //  number of boundary subdivisions
             int _n = 23 * _degree;
-
-
-            // number of control points, tells about the complexity of the curve
             int nrCont2 = _targetCurve2.ToNurbsCurve().Points.Count;
-
-            // the degree of the curve
             int crDeg2 = _targetCurve2.Degree;
 
             int idealDegree2 = nrCont2 * crDeg2;
-
-            // Chosen degree of complex analytic polynomials
-            // we cap the degree to lie within 15 and 75 ... anything beyond would me meaningless
             int _degree2 = Math.Min(Math.Max(10, idealDegree2), 50);
-
-            //  number of boundary subdivisions
             int _n2 = 23 * _degree2;
 
             int deg;
-            if (degree == 0)
-            {
-                deg = Math.Max(_degree, _degree2);
-            }
-            else deg = degree;
-
-
+            if (degree == 0) { deg = Math.Max(_degree, _degree2); } else { deg = degree; }
 
             double[] t = _targetCurve.DivideByCount(_n, true);
-            var _targetPoints = new List<Point3d>();
-            for (int i = 0; i < _n; i++) _targetPoints.Add(_targetCurve.PointAt(flip? 1-t[i]: t[i]));
-
+            var _targetPoints = Enumerable.Range(0, _n).Select(i => _targetCurve.PointAt(flip ? 1 - t[i] : t[i])).ToList();
             double[] t2 = _targetCurve2.DivideByCount(_n2, true);
-            var _targetPoints2 = new List<Point3d>();
-
-            for (int i = 0; i < _n2; i++)
-                _targetPoints2.Add(_targetCurve2.PointAt(t2[(i + (int) ((double) _n2 * (angle / 2 * Math.PI))) % _n2]));
+            var _targetPoints2 = Enumerable.Range(0, _n2).Select(i => _targetCurve2.PointAt(t2[(i + (int)((double)_n2 * (angle / 2 * Math.PI))) % _n2])).ToList();
 
             double R1 = 0.5;
             double R2 = 1.5;
@@ -234,7 +205,7 @@ namespace MinSurface
             AnnularLaplaceData akkz = new AnnularLaplaceData(zs1, R1, zs2, R2, deg);
 
             var MM = Mesh.CreateFromCylinder(new Cylinder(new Circle(1), 1), vertical, around);
-
+            
             // bottleneck
             for (int ii = 0; ii < MM.Vertices.Count; ii++)
             {
@@ -242,9 +213,10 @@ namespace MinSurface
                 var y = MM.Vertices[ii].Y;
                 var z = MM.Vertices[ii].Z;
                 var f = (R1 + z * (R2 - R1)) / Math.Sqrt(x * x + y * y);
-                var p = new Point2d(f * x , f * y);
-                MM.Vertices. SetVertex(ii, akx.eval(p), aky.eval(p), akkz.eval(p));
+                var p = new Point2d(f * x, f * y);
+                MM.Vertices.SetVertex(ii, akx.eval(p), aky.eval(p), akkz.eval(p));
             }
+            
             DA.SetData(0, MM);
         }
     }
