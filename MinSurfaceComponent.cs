@@ -111,26 +111,24 @@ namespace MinSurface
 
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            //0
-
-            pManager.AddCurveParameter("Input curve (required)", "inputCurve", "The closed" +
+            pManager.AddCurveParameter("Input curve (required)", "inputCurve", "The first closed" +
                 " input curve." +
                 "The curve can either be smooth, or be a polyline, or a mixture. " +
                 "The only requirement is that it be smooth. " +
-                "This parameter is the only required one, all others are optional.", GH_ParamAccess.item);
+                "This parameter is required.", GH_ParamAccess.item);
 
-            pManager.AddCurveParameter("Input curve (required)", "inputCurve", "The closed" +
+            pManager.AddCurveParameter("Input curve (required)", "inputCurve", "The second closed" +
     " input curve." +
     "The curve can either be smooth, or be a polyline, or a mixture. " +
-    "The only requirement is that it be smooth. " +
-    "This parameter is the only required one, all others are optional.", GH_ParamAccess.item);
+    "This parameter is required.", GH_ParamAccess.item);
 
-            //5
-            pManager.AddNumberParameter("Mesh density", "density", "density of the mesh. 0.0 is coarse, 1.0 is very dense. The lower, the faster.", GH_ParamAccess.item, .9);
+            pManager.AddIntegerParameter("nrVerticesVertical (optional)", "nrVerticesVertical", "number of vertices in vertical direction.", GH_ParamAccess.item, 20);
+            pManager.AddIntegerParameter("nrVerticesAround (optional)", "nrVerticesAround", "number of vertices around the cylinder.", GH_ParamAccess.item, 18);
+            pManager.AddIntegerParameter("Degree (optional)", "degree", "degree of the surface.", GH_ParamAccess.item, 0);
 
-            pManager.AddIntegerParameter("Degree (optional)", "degree", "degree of the surface. optional.", GH_ParamAccess.item, 0);
+            pManager.AddAngleParameter("Rotation angle of one of the curves around itself (optional)", "roationAngle", "rotation angle of the curves around itself", GH_ParamAccess.item, 0);
 
-
+            pManager.AddBooleanParameter("Flip one curve (optional)", "flip", "flip one curve? try this to prevent self-intersection.", GH_ParamAccess.item, false);
 
         }
 
@@ -142,20 +140,27 @@ namespace MinSurface
         {// the input curve
             Curve tc = null;
             Curve tc2 = null;
-
-            double k = 0.9;
+            int vertical = 0;
+            int around = 0;
             int degree = 0;
-
+            double angle = 0;
+            bool flip = false;
+            
             DA.GetData(0, ref tc);
             DA.GetData(1, ref tc2);
-            DA.GetData(2, ref k);
-            DA.GetData(3, ref degree);
+            DA.GetData(2, ref vertical);
+            DA.GetData(3, ref around);
+            DA.GetData(4, ref degree);
+            DA.GetData(5, ref angle);
+            DA.GetData(6, ref flip);
 
             if (tc == null || !tc.IsValid || !tc.IsClosed) { this.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "First input curve is either unvalid or not closed!"); return; }
             if (tc2 == null || !tc2.IsValid || !tc2.IsClosed) { this.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Second input curve is either unvalid or not closed!"); return; }
 
             Curve _targetCurve = tc;
             Curve _targetCurve2 = tc2;
+
+
 
 
             // number of control points, tells about the complexity of the curve
@@ -168,7 +173,7 @@ namespace MinSurface
 
             // Chosen degree of complex analytic polynomials
             // we cap the degree to lie within 15 and 75 ... anything beyond would me meaningless
-            int _degree = Math.Min(Math.Max(15, idealDegree), 75);
+            int _degree = Math.Min(Math.Max(10, idealDegree), 50);
 
             //  number of boundary subdivisions
             int _n = 23 * _degree;
@@ -184,7 +189,7 @@ namespace MinSurface
 
             // Chosen degree of complex analytic polynomials
             // we cap the degree to lie within 15 and 75 ... anything beyond would me meaningless
-            int _degree2 = Math.Min(Math.Max(15, idealDegree2), 75);
+            int _degree2 = Math.Min(Math.Max(10, idealDegree2), 50);
 
             //  number of boundary subdivisions
             int _n2 = 23 * _degree2;
@@ -200,13 +205,13 @@ namespace MinSurface
 
             double[] t = _targetCurve.DivideByCount(_n, true);
             var _targetPoints = new List<Point3d>();
-            for (int i = 0; i < _n; i++) _targetPoints.Add(_targetCurve.PointAt(t[i]));
+            for (int i = 0; i < _n; i++) _targetPoints.Add(_targetCurve.PointAt(flip? 1-t[i]: t[i]));
 
             double[] t2 = _targetCurve2.DivideByCount(_n2, true);
             var _targetPoints2 = new List<Point3d>();
 
             for (int i = 0; i < _n2; i++)
-                _targetPoints2.Add(_targetCurve2.PointAt(t2[i]));
+                _targetPoints2.Add(_targetCurve2.PointAt(t2[(i + (int) ((double) _n2 * (angle / 2 * Math.PI))) % _n2]));
 
             double R1 = 0.5;
             double R2 = 1.5;
@@ -228,24 +233,19 @@ namespace MinSurface
                                                                         //       LaplaceData kkz = new LaplaceData(zs1, deg);
             AnnularLaplaceData akkz = new AnnularLaplaceData(zs1, R1, zs2, R2, deg);
 
-            var cl = new Rhino.Collections.CurveList();
-            cl.Add(new Circle(R1).ToNurbsCurve());
-            cl.Add(new Circle(R2).ToNurbsCurve());
+            var MM = Mesh.CreateFromCylinder(new Cylinder(new Circle(1), 1), vertical, around);
 
-            var b = Brep.CreatePlanarBreps(cl, .001);
-            var _domainMesh = Mesh.CreateFromBrep(b[0], new MeshingParameters(k))[0];
-
-            // this loop takes 170ms for 10000 vertices ... so, it is the bottleneck of the entire procedure
-            // so it's worth to parallelize it
-            for (int ii = 0; ii < _domainMesh.Vertices.Count; ii++)
+            // bottleneck
+            for (int ii = 0; ii < MM.Vertices.Count; ii++)
             {
-                var p = new Point2d(_domainMesh.Vertices[ii].X, _domainMesh.Vertices[ii].Y);
-                double newx2 = akx.eval(p);
-                double newy2 = aky.eval(p); // evalPolynomial2(ky, p);  <-- maybe it's faster because it will be inlined?
-                double newz2 = akkz.eval(p); // evalPolynomial2(kkz, p);
-                _domainMesh.Vertices.SetVertex(ii, newx2, newy2, newz2);
+                var x = MM.Vertices[ii].X;
+                var y = MM.Vertices[ii].Y;
+                var z = MM.Vertices[ii].Z;
+                var f = (R1 + z * (R2 - R1)) / Math.Sqrt(x * x + y * y);
+                var p = new Point2d(f * x , f * y);
+                MM.Vertices. SetVertex(ii, akx.eval(p), aky.eval(p), akkz.eval(p));
             }
-            DA.SetData(0, _domainMesh);
+            DA.SetData(0, MM);
         }
     }
 }
