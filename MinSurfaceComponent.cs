@@ -48,7 +48,7 @@ namespace MinSurface
         private double[] dn;
         private int degree;
 
-        // solves the equation Laplace(u) = 0 on the unit disk, 
+        // solves the equation Laplace(u) = 0 on an annular region R1 <= R <= R2
         public AnnularLaplaceData(List<double> targets1, double R1, List<double> targets2, double R2, int degree)
         {
 
@@ -66,14 +66,15 @@ namespace MinSurface
             // can obviously be parallelized
             for (int i = 1; i < degree; i++)
             {
-                var g1i = targets1.Select((double v, int ii) => 2.0 * v * Math.Cos((double)(i * ii) / (double)targets1.Count * 2.0 * Math.PI)).Average();
-                var g2i = targets2.Select((double v, int ii) => 2.0 * v * Math.Cos((double)(i * ii) / (double)targets2.Count * 2.0 * Math.PI)).Average();
+                var g1i = 4.0 * Math.PI * targets1.Select((double v, int ii) =>  v * Math.Cos((double)(i * ii) / (double) targets1.Count )).Average();
+                var g2i = 4.0 * Math.PI * targets2.Select((double v, int ii) =>  v * Math.Cos((double)(i * ii) / (double) targets2.Count )).Average();
+
                 var det = Math.Pow(R1 / R2, i) - Math.Pow(R2 / R1, i);
                 this.an[i] = 1.0 / det * (Math.Pow(R2, -i) * g1i - Math.Pow(R1, -i) * g2i);
                 this.bn[i] = 1.0 / det * (-Math.Pow(R2, i) * g1i + Math.Pow(R1, i) * g2i);
 
-                var g1ic = targets1.Select((double v, int ii) => 2.0 * v * Math.Sin((double)(i * ii) / (double)targets1.Count * 2.0 * Math.PI)).Average();
-                var g2ic = targets2.Select((double v, int ii) => 2.0 * v * Math.Sin((double)(i * ii) / (double)targets2.Count * 2.0 * Math.PI)).Average();
+                var g1ic = 4.0 * Math.PI * targets1.Select((double v, int ii) => v * Math.Sin((double) (i * ii) / (double) targets1.Count )).Average();
+                var g2ic = 4.0 * Math.PI * targets2.Select((double v, int ii) => v * Math.Sin((double) (i * ii) / (double) targets2.Count )).Average();
                 this.cn[i] = 1.0 / det * (Math.Pow(R2, -i) * g1ic - Math.Pow(R1, -i) * g2ic);
                 this.dn[i] = 1.0 / det * (-Math.Pow(R2, i) * g1ic + Math.Pow(R1, i) * g2ic);
             }
