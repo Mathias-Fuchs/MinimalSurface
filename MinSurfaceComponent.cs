@@ -48,7 +48,7 @@ namespace MinSurface
         private double[] dn;
         private int degree;
 
-        // solves the equation Laplace(u) = 0 on an annular region R1 <= R <= R2
+        // solves the equation Laplace(u) = 0 on the unit disk, 
         public AnnularLaplaceData(List<double> targets1, double R1, List<double> targets2, double R2, int degree)
         {
 
@@ -66,15 +66,14 @@ namespace MinSurface
             // can obviously be parallelized
             for (int i = 1; i < degree; i++)
             {
-                var g1i = 4.0 * Math.PI * targets1.Select((double v, int ii) =>  v * Math.Cos((double)(i * ii) / (double) targets1.Count )).Average();
-                var g2i = 4.0 * Math.PI * targets2.Select((double v, int ii) =>  v * Math.Cos((double)(i * ii) / (double) targets2.Count )).Average();
-
+                var g1i = targets1.Select((double v, int ii) => 2.0 * v * Math.Cos((double)(i * ii) / (double)targets1.Count * 2.0 * Math.PI)).Average();
+                var g2i = targets2.Select((double v, int ii) => 2.0 * v * Math.Cos((double)(i * ii) / (double)targets2.Count * 2.0 * Math.PI)).Average();
                 var det = Math.Pow(R1 / R2, i) - Math.Pow(R2 / R1, i);
                 this.an[i] = 1.0 / det * (Math.Pow(R2, -i) * g1i - Math.Pow(R1, -i) * g2i);
                 this.bn[i] = 1.0 / det * (-Math.Pow(R2, i) * g1i + Math.Pow(R1, i) * g2i);
 
-                var g1ic = 4.0 * Math.PI * targets1.Select((double v, int ii) => v * Math.Sin((double) (i * ii) / (double) targets1.Count )).Average();
-                var g2ic = 4.0 * Math.PI * targets2.Select((double v, int ii) => v * Math.Sin((double) (i * ii) / (double) targets2.Count )).Average();
+                var g1ic = targets1.Select((double v, int ii) => 2.0 * v * Math.Sin((double)(i * ii) / (double)targets1.Count * 2.0 * Math.PI)).Average();
+                var g2ic = targets2.Select((double v, int ii) => 2.0 * v * Math.Sin((double)(i * ii) / (double)targets2.Count * 2.0 * Math.PI)).Average();
                 this.cn[i] = 1.0 / det * (Math.Pow(R2, -i) * g1ic - Math.Pow(R1, -i) * g2ic);
                 this.dn[i] = 1.0 / det * (-Math.Pow(R2, i) * g1ic + Math.Pow(R1, i) * g2ic);
             }
@@ -130,9 +129,7 @@ namespace MinSurface
             pManager.AddAngleParameter("Rotation angle of one of the curves around itself (optional)", "roationAngle", "rotation angle of the curves around itself", GH_ParamAccess.item, 0);
 
             pManager.AddBooleanParameter("Flip one curve (optional)", "flip", "flip one curve? try this to prevent self-intersection.", GH_ParamAccess.item, false);
-            pManager.AddPointParameter("target points (optional)", "", "", GH_ParamAccess.list, null);
-            pManager.AddPointParameter("target points (optional)", "", "", GH_ParamAccess.list, null);
-
+            
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
@@ -148,8 +145,6 @@ namespace MinSurface
             int degree = 0;
             double angle = 0;
             bool flip = false;
-            List<Point3d> A = new List<Point3d>();
-            List<Point3d> B = new List<Point3d>();
 
             DA.GetData(0, ref tc);
             DA.GetData(1, ref tc2);
@@ -158,50 +153,36 @@ namespace MinSurface
             DA.GetData(4, ref degree);
             DA.GetData(5, ref angle);
             DA.GetData(6, ref flip);
-            DA.GetDataList(7, A);
-            DA.GetDataList(8, B);
-            List<Point3d> _targetPoints;
-            List<Point3d> _targetPoints2;
+
+            if (tc == null || !tc.IsValid || !tc.IsClosed) { this.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "First input curve is either unvalid or not closed!"); return; }
+            if (tc2 == null || !tc2.IsValid || !tc2.IsClosed) { this.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Second input curve is either unvalid or not closed!"); return; }
+
+            Curve _targetCurve = tc;
+            Curve _targetCurve2 = tc2;
+
+            // number of control points, tells about the complexity of the curve
+            int nrCont = _targetCurve.ToNurbsCurve().Points.Count;
+            int crDeg = _targetCurve.Degree;
+
+            int idealDegree = nrCont * crDeg;
+            int _degree = Math.Min(Math.Max(10, idealDegree), 50);
+
+            //  number of boundary subdivisions
+            int _n = 23 * _degree;
+            int nrCont2 = _targetCurve2.ToNurbsCurve().Points.Count;
+            int crDeg2 = _targetCurve2.Degree;
+
+            int idealDegree2 = nrCont2 * crDeg2;
+            int _degree2 = Math.Min(Math.Max(10, idealDegree2), 50);
+            int _n2 = 23 * _degree2;
+
             int deg;
-            if (A.Count == 0 || B.Count == 0)
-            {
+            if (degree == 0) { deg = Math.Max(_degree, _degree2); } else { deg = degree; }
 
-                if (tc == null || !tc.IsValid || !tc.IsClosed) { this.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "First input curve is either unvalid or not closed!"); return; }
-                if (tc2 == null || !tc2.IsValid || !tc2.IsClosed) { this.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Second input curve is either unvalid or not closed!"); return; }
-
-                Curve _targetCurve = tc;
-                Curve _targetCurve2 = tc2;
-
-                // number of control points, tells about the complexity of the curve
-                int nrCont = _targetCurve.ToNurbsCurve().Points.Count;
-                int crDeg = _targetCurve.Degree;
-
-                int idealDegree = nrCont * crDeg;
-                int _degree = Math.Min(Math.Max(10, idealDegree), 50);
-
-                //  number of boundary subdivisions
-                int _n = 23 * _degree;
-                int nrCont2 = _targetCurve2.ToNurbsCurve().Points.Count;
-                int crDeg2 = _targetCurve2.Degree;
-
-                int idealDegree2 = nrCont2 * crDeg2;
-                int _degree2 = Math.Min(Math.Max(10, idealDegree2), 50);
-                int _n2 = 23 * _degree2;
-
-                if (degree == 0) { deg = Math.Max(_degree, _degree2); } else { deg = degree; }
-
-                double[] t = _targetCurve.DivideByCount(_n, true);
-                _targetPoints = Enumerable.Range(0, _n).Select(i => _targetCurve.PointAt(flip ? 1 - t[i] : t[i])).ToList();
-                double[] t2 = _targetCurve2.DivideByCount(_n2, true);
-                _targetPoints2 = Enumerable.Range(0, _n2).Select(i => _targetCurve2.PointAt(t2[(i + (int)((double)_n2 * (angle / 2 * Math.PI))) % _n2])).ToList();
-
-            }
-            else
-            {
-                _targetPoints = A;
-                _targetPoints2 = B;
-                deg = Math.Min(Math.Max(10, Math.Max(_targetPoints.Count, _targetPoints2.Count)) , 50);
-            }
+            double[] t = _targetCurve.DivideByCount(_n, true);
+            var _targetPoints = Enumerable.Range(0, _n).Select(i => _targetCurve.PointAt(flip ? 1 - t[i] : t[i])).ToList();
+            double[] t2 = _targetCurve2.DivideByCount(_n2, true);
+            var _targetPoints2 = Enumerable.Range(0, _n2).Select(i => _targetCurve2.PointAt(t2[(i + (int)((double)_n2 * (angle / 2 * Math.PI))) % _n2])).ToList();
 
             double R1 = 0.5;
             double R2 = 1.5;
@@ -224,7 +205,7 @@ namespace MinSurface
             AnnularLaplaceData akkz = new AnnularLaplaceData(zs1, R1, zs2, R2, deg);
 
             var MM = Mesh.CreateFromCylinder(new Cylinder(new Circle(1), 1), vertical, around);
-
+            
             // bottleneck
             for (int ii = 0; ii < MM.Vertices.Count; ii++)
             {
@@ -235,9 +216,8 @@ namespace MinSurface
                 var p = new Point2d(f * x, f * y);
                 MM.Vertices.SetVertex(ii, akx.eval(p), aky.eval(p), akkz.eval(p));
             }
-
+            
             DA.SetData(0, MM);
-            // TODO: find the angle such that the mesh goes off perpendicularly from the ground curve
         }
     }
 }

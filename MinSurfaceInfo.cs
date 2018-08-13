@@ -17,7 +17,7 @@ namespace MinSurface
         {
             get
             {
-                return Properties.Resources.illu4;
+                return new System.Drawing.Bitmap("Resources/illu4.bmp");
                 }
         }
         public override string Description
