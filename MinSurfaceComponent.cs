@@ -7,6 +7,7 @@ using System.Linq;
 namespace MinSurface
 {
 
+
     public class LaplaceData
     {
         private double a0;
@@ -14,7 +15,8 @@ namespace MinSurface
         private double[] bn;
         private int degree;
 
-        // solves the equation Laplace(u) = 0 on the unit disk, 
+        // solves the equation Laplace(u) = 0 on the inside of the unit disk. Input: the Dirichlet boundary values along the domain's boundary, sampled in an equispaced way
+        // the domain itself or its boundary are not needed, only a list of equi-spaced 
         public LaplaceData(List<double> targets, int degree)
         {
             this.a0 = targets.Average();
@@ -29,7 +31,8 @@ namespace MinSurface
                 this.bn[i] = targets.Select((double v, int ii) => 2.0 * v * Math.Sin((double)(i * ii) / (double)targets.Count * 2 * Math.PI)).Average();
             }
         }
-
+         
+        // we assume the point p lies inside the unit disk
         public double eval(Point2d p)
         {
             var r = Math.Sqrt(p.X * p.X + p.Y * p.Y);
@@ -207,6 +210,9 @@ namespace MinSurface
             var MM = Mesh.CreateFromCylinder(new Cylinder(new Circle(1), 1), vertical, around);
             
             // bottleneck
+            // can't be done with MM.Vertices.GetEnumerator() I guess
+
+
             for (int ii = 0; ii < MM.Vertices.Count; ii++)
             {
                 var x = MM.Vertices[ii].X;
@@ -216,7 +222,7 @@ namespace MinSurface
                 var p = new Point2d(f * x, f * y);
                 MM.Vertices.SetVertex(ii, akx.eval(p), aky.eval(p), akkz.eval(p));
             }
-            
+            MM.Vertices.CombineIdentical(true, true);
             DA.SetData(0, MM);
         }
     }
