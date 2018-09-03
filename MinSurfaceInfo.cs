@@ -31,7 +31,8 @@ namespace MinSurface
         {
             get
             {
-                return new Guid("832052de-9224-4ef9-aba0-dad6c996f7eb");
+                return Guid.NewGuid();
+                // return new Guid("932052de-9224-4ef9-aba0-dad6c996f7eb");
             }
         }
         public override string AuthorName

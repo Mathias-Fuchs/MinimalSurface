@@ -109,7 +109,10 @@ namespace MinSurface
 
         public override Guid ComponentGuid
         {
-            get { return new Guid("6679fe76-1914-4cf2-a2da-a3b12cef0ff3"); }
+            get {
+                return Guid.NewGuid();
+                // return new Guid("6679fe76-1914-4cf2-a2da-a3b12cef0ff3");
+            }
         }
 
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
@@ -222,7 +225,7 @@ namespace MinSurface
                 var p = new Point2d(f * x, f * y);
                 MM.Vertices.SetVertex(ii, akx.eval(p), aky.eval(p), akkz.eval(p));
             }
-            MM.Vertices.CombineIdentical(true, true);
+//             MM.Vertices.CombineIdentical(true, true);
             DA.SetData(0, MM);
         }
     }
