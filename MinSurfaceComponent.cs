@@ -44,6 +44,7 @@ namespace MinSurface
 
     public class AnnularLaplaceData
     {
+	public double R1, R2;
         private double a0, b0;
         private double[] an;
         private double[] bn;
@@ -54,7 +55,8 @@ namespace MinSurface
         // solves the equation Laplace(u) = 0 on the unit disk, 
         public AnnularLaplaceData(List<double> targets1, double R1, List<double> targets2, double R2, int degree)
         {
-
+		this.R1 = R1;
+		this.R2 = R2;
             this.an = new double[degree + 1];
             this.bn = new double[degree + 1];
             this.cn = new double[degree + 1];
@@ -94,6 +96,27 @@ namespace MinSurface
                  (Math.Pow(r, i) * this.cn[i] + Math.Pow(r, -i) * this.dn[i]) * Math.Sin(i * theta)
                  );
         }
+
+        public double ddrR1(double theta) {
+	       var r = this.R1;
+	       return this.b0 / r + Enumerable.Range(1, this.degree).Sum(i =>
+                 ((double)i * Math.Pow(r, i - 1) * this.an[i] +
+		 - (double)i * Math.Pow(r, -i - 1) * this.bn[i]) * Math.Cos(i * theta) +
+                 ((double)i * Math.Pow(r, i - 1) * this.cn[i] + (double)i * Math.Pow(r, -i - 1) * this.dn[i]) * Math.Sin(i * theta)
+                 );
+	}
+
+        public double ddrR2(double theta) {
+	       var r = this.R2;
+	       return this.b0 / r + Enumerable.Range(1, this.degree).Sum(i =>
+                 ((double)i * Math.Pow(r, i - 1) * this.an[i] +
+		 - (double)i * Math.Pow(r, -i - 1) * this.bn[i]) * Math.Cos(i * theta) +
+                 ((double)i * Math.Pow(r, i - 1) * this.cn[i] + (double)i * Math.Pow(r, -i - 1) * this.dn[i]) * Math.Sin(i * theta)
+                 );
+	}
+
+
+
     }
 
 
