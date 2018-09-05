@@ -31,7 +31,7 @@ namespace MinSurface
                 this.bn[i] = targets.Select((double v, int ii) => 2.0 * v * Math.Sin((double)(i * ii) / (double)targets.Count * 2 * Math.PI)).Average();
             }
         }
-         
+
         // we assume the point p lies inside the unit disk
         public double eval(Point2d p)
         {
@@ -44,7 +44,7 @@ namespace MinSurface
 
     public class AnnularLaplaceData
     {
-	public double R1, R2;
+        public double R1, R2;
         private double a0, b0;
         private double[] an;
         private double[] bn;
@@ -55,8 +55,8 @@ namespace MinSurface
         // solves the equation Laplace(u) = 0 on the unit disk, 
         public AnnularLaplaceData(List<double> targets1, double R1, List<double> targets2, double R2, int degree)
         {
-		this.R1 = R1;
-		this.R2 = R2;
+            this.R1 = R1;
+            this.R2 = R2;
             this.an = new double[degree + 1];
             this.bn = new double[degree + 1];
             this.cn = new double[degree + 1];
@@ -97,13 +97,35 @@ namespace MinSurface
                  );
         }
 
-        public double ddr(double r, double theta) {
-            	       return this.b0 / r + Enumerable.Range(1, this.degree).Sum(i =>
-                 ((double)i * Math.Pow(r, i - 1) * this.an[i] +
-		 - (double)i * Math.Pow(r, -i - 1) * this.bn[i]) * Math.Cos(i * theta) +
-                 ((double)i * Math.Pow(r, i - 1) * this.cn[i] + (double)i * Math.Pow(r, -i - 1) * this.dn[i]) * Math.Sin(i * theta)
+        public double ddr(Point2d p)
+        {
+            var r = Math.Sqrt(p.X * p.X + p.Y * p.Y);
+            var theta = Math.Atan2(p.Y, p.X);
+
+            return this.b0 / r + Enumerable.Range(1, this.degree).Sum(i =>
+                ((double)i * Math.Pow(r, i - 1) * this.an[i]
+                -(double)i * Math.Pow(r, -i - 1) * this.bn[i]) * Math.Cos(i * theta) +
+                ((double)i * Math.Pow(r, i - 1) * this.cn[i]
+                -(double)i * Math.Pow(r, -i - 1) * this.dn[i]) * Math.Sin(i * theta)
+      );
+        }
+
+
+        public double ddtheta(Point2d p)
+        {
+            var r = Math.Sqrt(p.X * p.X + p.Y * p.Y);
+            var theta = Math.Atan2(p.Y, p.X);
+
+            return Enumerable.Range(1, this.degree).Sum(i =>
+                 (Math.Pow(r, i) * this.an[i] + Math.Pow(r, -i) * this.bn[i]) * (-(double)i * Math.Sin(i * theta)) +
+                 (Math.Pow(r, i) * this.cn[i] + Math.Pow(r, -i) * this.dn[i]) * ( (double)i * Math.Cos(i * theta))
                  );
-	    }
+        }
+
+        public double drtimesdtheta(Point2d p) {
+            return ddr(p) * ddtheta(p);
+
+        }
 
 
     }
@@ -121,7 +143,8 @@ namespace MinSurface
 
         public override Guid ComponentGuid
         {
-            get {
+            get
+            {
                 return Guid.NewGuid();
                 // return new Guid("6679fe76-1914-4cf2-a2da-a3b12cef0ff3");
             }
@@ -147,7 +170,7 @@ namespace MinSurface
             pManager.AddAngleParameter("Rotation angle of one of the curves around itself (optional)", "roationAngle", "rotation angle of the curves around itself", GH_ParamAccess.item, 0);
 
             pManager.AddBooleanParameter("Flip one curve (optional)", "flip", "flip one curve? try this to prevent self-intersection.", GH_ParamAccess.item, false);
-            
+
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
@@ -223,7 +246,7 @@ namespace MinSurface
             AnnularLaplaceData akkz = new AnnularLaplaceData(zs1, R1, zs2, R2, deg);
 
             var MM = Mesh.CreateFromCylinder(new Cylinder(new Circle(1), 1), vertical, around);
-            
+
             // bottleneck
             // can't be done with MM.Vertices.GetEnumerator() I guess
 
@@ -237,7 +260,7 @@ namespace MinSurface
                 var p = new Point2d(f * x, f * y);
                 MM.Vertices.SetVertex(ii, akx.eval(p), aky.eval(p), akkz.eval(p));
             }
-//             MM.Vertices.CombineIdentical(true, true);
+            //             MM.Vertices.CombineIdentical(true, true);
             DA.SetData(0, MM);
         }
     }
