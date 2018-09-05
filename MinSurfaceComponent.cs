@@ -97,24 +97,13 @@ namespace MinSurface
                  );
         }
 
-        public double ddrR1(double theta) {
-	       var r = this.R1;
-	       return this.b0 / r + Enumerable.Range(1, this.degree).Sum(i =>
+        public double ddr(double r, double theta) {
+            	       return this.b0 / r + Enumerable.Range(1, this.degree).Sum(i =>
                  ((double)i * Math.Pow(r, i - 1) * this.an[i] +
 		 - (double)i * Math.Pow(r, -i - 1) * this.bn[i]) * Math.Cos(i * theta) +
                  ((double)i * Math.Pow(r, i - 1) * this.cn[i] + (double)i * Math.Pow(r, -i - 1) * this.dn[i]) * Math.Sin(i * theta)
                  );
-	}
-
-        public double ddrR2(double theta) {
-	       var r = this.R2;
-	       return this.b0 / r + Enumerable.Range(1, this.degree).Sum(i =>
-                 ((double)i * Math.Pow(r, i - 1) * this.an[i] +
-		 - (double)i * Math.Pow(r, -i - 1) * this.bn[i]) * Math.Cos(i * theta) +
-                 ((double)i * Math.Pow(r, i - 1) * this.cn[i] + (double)i * Math.Pow(r, -i - 1) * this.dn[i]) * Math.Sin(i * theta)
-                 );
-	}
-
+	    }
 
 
     }
