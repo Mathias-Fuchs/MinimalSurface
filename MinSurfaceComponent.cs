@@ -102,12 +102,13 @@ namespace MinSurface
             var r = Math.Sqrt(p.X * p.X + p.Y * p.Y);
             var theta = Math.Atan2(p.Y, p.X);
 
-            return this.b0 / r + Enumerable.Range(1, this.degree).Sum(i =>
+            var gg = this.b0 / r + Enumerable.Range(1, this.degree).Sum(i =>
                 ((double)i * Math.Pow(r, i - 1) * this.an[i]
                 - (double)i * Math.Pow(r, -i - 1) * this.bn[i]) * Math.Cos(i * theta) +
                 ((double)i * Math.Pow(r, i - 1) * this.cn[i]
                 - (double)i * Math.Pow(r, -i - 1) * this.dn[i]) * Math.Sin(i * theta)
       );
+            return gg;
         }
 
 
@@ -124,7 +125,8 @@ namespace MinSurface
 
         public double drtimesdtheta(Point2d p)
         {
-            return ddr(p) * ddtheta(p);
+            var gg = ddr(p) * ddtheta(p);
+            return gg;
         }
 
 
@@ -174,7 +176,53 @@ namespace MinSurface
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
-            => pManager.AddMeshParameter("Output mesh", "outputMesh", "The output mesh, an approximate minimal surface.", GH_ParamAccess.item);
+        {
+            pManager.AddMeshParameter("Output mesh", "outputMesh", "The output mesh, an approximate minimal surface.", GH_ParamAccess.item);
+            pManager.AddNumberParameter("Non-orthogonality", "", "", GH_ParamAccess.item);
+        }
+
+        private static Mesh UncappedCylinder(int axis_divisions, int height_divisions)
+        {
+
+            Mesh M = new Mesh();
+            if (axis_divisions <= 0 || height_divisions <= 0) return M;
+            M.Vertices.Capacity = axis_divisions * height_divisions;
+            M.Faces.Capacity = 2 * (axis_divisions * (height_divisions - 1));
+
+            for (int th = 0; th < axis_divisions; th++)
+            {
+                double x = Math.Cos(2.0 * Math.PI * th / (double)axis_divisions);
+                double y = Math.Sin(2.0 * Math.PI * th / (double)axis_divisions);
+
+                for (int h = 0; h < height_divisions; h++)
+                {
+                    double z = (double)h / (double)(height_divisions - 1);
+                    M.Vertices.Add(x, y, z);
+                }
+            }
+
+            for (int th = 0; th < axis_divisions; th++)
+            {
+                for (int h = 1; h < height_divisions; h++)
+                {
+                    M.Faces.AddFace(
+                     ((th + 0) % axis_divisions) * height_divisions + (h - 1),
+                     ((th + 1) % axis_divisions) * height_divisions + (h - 1),
+                     ((th + 0) % axis_divisions) * height_divisions + (h + 0)
+                     );
+
+                    M.Faces.AddFace(
+                     ((th + 1) % axis_divisions) * height_divisions + (h - 1),
+                     ((th + 1) % axis_divisions) * height_divisions + (h + 0),
+                     ((th + 0) % axis_divisions) * height_divisions + (h + 0)
+                     );
+                }
+            }
+
+            return M;
+
+        }
+
 
 
         protected override void SolveInstance(IGH_DataAccess DA)
@@ -245,11 +293,14 @@ namespace MinSurface
                                                                         //       LaplaceData kkz = new LaplaceData(zs1, deg);
             AnnularLaplaceData akkz = new AnnularLaplaceData(zs1, R1, zs2, R2, deg);
 
-            var MM = Mesh.CreateFromCylinder(new Cylinder(new Circle(1), 1), vertical, around);
+            var MM = UncappedCylinder(around, vertical);
+
             var Cyl = MM.DuplicateMesh();
+
+
+
             // bottleneck
             // can't be done with MM.Vertices.GetEnumerator() I guess
-
 
             for (int ii = 0; ii < MM.Vertices.Count; ii++)
             {
@@ -260,12 +311,11 @@ namespace MinSurface
                 var p = new Point2d(f * x, f * y);
                 MM.Vertices.SetVertex(ii, akx.eval(p), aky.eval(p), akkz.eval(p));
             }
-            //             MM.Vertices.CombineIdentical(true, true);
 
-            if (false)
-            {
-                Enumerable.Range(1, Cyl.Vertices.Count).Sum(
-                    ii =>
+            DA.SetData(0, MM);
+
+            DA.SetData(1, Enumerable.Range(0, Cyl.Vertices.Count).Average(
+                ii =>
                     {
                         var x = Cyl.Vertices[ii].X;
                         var y = Cyl.Vertices[ii].Y;
@@ -273,16 +323,17 @@ namespace MinSurface
                         var f = (R1 + z * (R2 - R1)) / Math.Sqrt(x * x + y * y);
                         var p = new Point2d(f * x, f * y);
 
-                        return Math.Pow(
+                        var gg = Math.Pow(
                             akx.drtimesdtheta(p) + aky.drtimesdtheta(p) + akkz.drtimesdtheta(p), 2);
+                        return gg;
                     }
-                );
+                )
+            );
 
 
-            }
 
 
-            DA.SetData(0, MM);
+
         }
     }
 }
