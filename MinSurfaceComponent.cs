@@ -211,11 +211,11 @@ namespace MinSurface
             AnnularLaplaceData akkz = new AnnularLaplaceData(zs1, R1, zs2, R2, deg);
 
             var MM = Mesh.CreateFromCylinder(new Cylinder(new Circle(1), 1), vertical, around);
-            
+
             // bottleneck
             // can't be done with MM.Vertices.GetEnumerator() I guess
 
-
+            int m = MM.Vertices.Count;
             for (int ii = 0; ii < MM.Vertices.Count; ii++)
             {
                 var x = MM.Vertices[ii].X;
@@ -225,7 +225,9 @@ namespace MinSurface
                 var p = new Point2d(f * x, f * y);
                 MM.Vertices.SetVertex(ii, akx.eval(p), aky.eval(p), akkz.eval(p));
             }
-//             MM.Vertices.CombineIdentical(true, true);
+            int n = MM.Vertices.Count;
+            if (n < m) this.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "vertex number decreased.");
+           
             DA.SetData(0, MM);
         }
     }
