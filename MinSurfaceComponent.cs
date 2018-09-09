@@ -104,9 +104,9 @@ namespace MinSurface
 
             return this.b0 / r + Enumerable.Range(1, this.degree).Sum(i =>
                 ((double)i * Math.Pow(r, i - 1) * this.an[i]
-                -(double)i * Math.Pow(r, -i - 1) * this.bn[i]) * Math.Cos(i * theta) +
+                - (double)i * Math.Pow(r, -i - 1) * this.bn[i]) * Math.Cos(i * theta) +
                 ((double)i * Math.Pow(r, i - 1) * this.cn[i]
-                -(double)i * Math.Pow(r, -i - 1) * this.dn[i]) * Math.Sin(i * theta)
+                - (double)i * Math.Pow(r, -i - 1) * this.dn[i]) * Math.Sin(i * theta)
       );
         }
 
@@ -118,13 +118,13 @@ namespace MinSurface
 
             return Enumerable.Range(1, this.degree).Sum(i =>
                  (Math.Pow(r, i) * this.an[i] + Math.Pow(r, -i) * this.bn[i]) * (-(double)i * Math.Sin(i * theta)) +
-                 (Math.Pow(r, i) * this.cn[i] + Math.Pow(r, -i) * this.dn[i]) * ( (double)i * Math.Cos(i * theta))
+                 (Math.Pow(r, i) * this.cn[i] + Math.Pow(r, -i) * this.dn[i]) * ((double)i * Math.Cos(i * theta))
                  );
         }
 
-        public double drtimesdtheta(Point2d p) {
+        public double drtimesdtheta(Point2d p)
+        {
             return ddr(p) * ddtheta(p);
-
         }
 
 
@@ -246,7 +246,7 @@ namespace MinSurface
             AnnularLaplaceData akkz = new AnnularLaplaceData(zs1, R1, zs2, R2, deg);
 
             var MM = Mesh.CreateFromCylinder(new Cylinder(new Circle(1), 1), vertical, around);
-
+            var Cyl = MM.DuplicateMesh();
             // bottleneck
             // can't be done with MM.Vertices.GetEnumerator() I guess
 
@@ -261,6 +261,27 @@ namespace MinSurface
                 MM.Vertices.SetVertex(ii, akx.eval(p), aky.eval(p), akkz.eval(p));
             }
             //             MM.Vertices.CombineIdentical(true, true);
+
+            if (false)
+            {
+                Enumerable.Range(1, Cyl.Vertices.Count).Sum(
+                    ii =>
+                    {
+                        var x = Cyl.Vertices[ii].X;
+                        var y = Cyl.Vertices[ii].Y;
+                        var z = Cyl.Vertices[ii].Z;
+                        var f = (R1 + z * (R2 - R1)) / Math.Sqrt(x * x + y * y);
+                        var p = new Point2d(f * x, f * y);
+
+                        return Math.Pow(
+                            akx.drtimesdtheta(p) + aky.drtimesdtheta(p) + akkz.drtimesdtheta(p), 2);
+                    }
+                );
+
+
+            }
+
+
             DA.SetData(0, MM);
         }
     }
