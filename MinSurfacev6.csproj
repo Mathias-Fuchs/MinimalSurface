@@ -35,7 +35,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="AnnularLaplaceData.cs" />
+    <Compile Include="LaplaceData.cs" />
     <Compile Include="MinSurfaceComponent.cs" />
+    <Compile Include="MinSurfaceComponentOneBoundaryComponent.cs" />
     <Compile Include="MinSurfaceInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -52,8 +55,12 @@
     </Reference>
     <Reference Include="System.Drawing" />
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
-    <Folder Include="Properties\" />
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

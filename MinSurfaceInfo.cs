@@ -17,6 +17,7 @@ namespace MinSurface
         {
             get
             {
+                // return Properties.Resources.illu4;
                 return new System.Drawing.Bitmap("Resources/illu4.bmp");
                 }
         }
@@ -24,7 +25,8 @@ namespace MinSurface
         {
             get
             {
-                 return "This library computes minimal surfaces bounded by a closed input curve, without resorting to mesh relaxation.";
+                 return "This library computes minimal surfaces bounded by one or two closed input curves," +
+                    "without resorting to mesh relaxation.";
             }
         }
         public override Guid Id
