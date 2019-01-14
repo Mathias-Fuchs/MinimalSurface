@@ -9,3 +9,7 @@ Instead, it computes three harmonic functions of the (u, v) coordinates.
 This yields an approximation because minimal surfaces enjoy the property that their three coordinate functions on the surface itself are harmonic.
 
 Thus, we end up with an approximation. The approximation is perfect once the (u, v)-patch is isothermal.
+
+# Binary releases
+
+![Rhino 5 compiled binary (gha file)](ReleasedBinaries/MinSurfacev5.gha)
