@@ -12,4 +12,4 @@ Thus, we end up with an approximation. The approximation is perfect once the (u,
 
 # Binary releases
 
-![Rhino 5 compiled binary (gha file)](ReleasedBinaries/MinSurfacev5.gha)
+![Releases](releases)
