@@ -12,4 +12,4 @@ Thus, we end up with an approximation. The approximation is perfect once the (u,
 
 # Binary releases
 
-![Releases](releases)
+![Releases](../../releases)
