@@ -19,36 +19,41 @@ namespace MinSurface
         {
         }
 
+        protected override System.Drawing.Bitmap Icon
+        {
+            get
+            {
+                System.Drawing.Bitmap k = Properties.Resources.illu4;
+                return k;
+                
+            }
+        }
+
+
         public override Guid ComponentGuid
         {
             get
             {
-                return Guid.NewGuid();
-                // return new Guid("6679fe76-1914-4cf2-a2da-a3b12cef0ff3");
+                return new Guid("27FF5FB4-C44E-4C71-897E-C90879656324");
             }
         }
 
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddCurveParameter("Input curve (required)", "inputCurve", "The first closed" +
+            pManager.AddCurveParameter("Input curve (required)", "first input curve", "The first closed" +
                 " input curve." +
                 "The curve can either be smooth, or be a polyline, or a mixture. " +
                 "The only requirement is that it be closed. " +
                 "This parameter is required.", GH_ParamAccess.item);
-
-            pManager.AddCurveParameter("Input curve (required)", "inputCurve", "The second closed" +
+            pManager.AddCurveParameter("Input curve (required)", "second input curve", "The second closed" +
     " input curve." +
     "The curve can either be smooth, or be a polyline, or a mixture. " +
     "This parameter is required.", GH_ParamAccess.item);
-
             pManager.AddIntegerParameter("nrVerticesVertical (optional)", "nrVerticesVertical", "number of vertices in vertical direction.", GH_ParamAccess.item, 20);
             pManager.AddIntegerParameter("nrVerticesAround (optional)", "nrVerticesAround", "number of vertices around the cylinder.", GH_ParamAccess.item, 18);
             pManager.AddIntegerParameter("Degree (optional)", "degree", "degree of the surface.", GH_ParamAccess.item, 0);
-
-            pManager.AddAngleParameter("Rotation angle of one of the curves around itself (optional)", "roationAngle", "rotation angle of the curves around itself", GH_ParamAccess.item, 0);
-
+            pManager.AddAngleParameter("Rotation angle of one of the curves around itself (optional)", "rotationAngle", "rotation angle of the curves around itself", GH_ParamAccess.item, 0);
             pManager.AddBooleanParameter("Flip one curve (optional)", "flip", "flip one curve? try this to prevent self-intersection.", GH_ParamAccess.item, false);
-
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
@@ -62,8 +67,9 @@ namespace MinSurface
 
             Mesh M = new Mesh();
             if (axis_divisions <= 0 || height_divisions <= 0) return M;
-            M.Vertices.Capacity = axis_divisions * height_divisions;
-            M.Faces.Capacity = 2 * (axis_divisions * (height_divisions - 1));
+            
+            // M.Vertices.Capacity = axis_divisions * height_divisions;
+            // M.Faces.Capacity = 2 * (axis_divisions * (height_divisions - 1));
 
             for (int th = 0; th < axis_divisions; th++)
             {
@@ -98,8 +104,6 @@ namespace MinSurface
             return M;
 
         }
-
-
 
         protected override void SolveInstance(IGH_DataAccess DA)
         {// the input curve
@@ -147,7 +151,7 @@ namespace MinSurface
             double[] t = _targetCurve.DivideByCount(_n, true);
             var _targetPoints = Enumerable.Range(0, _n).Select(i => _targetCurve.PointAt(flip ? 1 - t[i] : t[i])).ToList();
             double[] t2 = _targetCurve2.DivideByCount(_n2, true);
-            var _targetPoints2 = Enumerable.Range(0, _n2).Select(i => _targetCurve2.PointAt(t2[(i + (int)((double)_n2 * (angle / 2 * Math.PI))) % _n2])).ToList();
+            var _targetPoints2 = Enumerable.Range(0, _n2).Select(i => _targetCurve2.PointAt(t2[(i + (int)((double)_n2 * (1.0 + angle / 2 * Math.PI))) % _n2])).ToList();
 
             double R1 = 0.5;
             double R2 = 1.5;

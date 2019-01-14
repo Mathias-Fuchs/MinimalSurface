@@ -15,11 +15,21 @@ namespace MinSurface
         {
         }
 
+        protected override System.Drawing.Bitmap Icon
+        {
+            get
+            {
+                System.Drawing.Bitmap k = Properties.Resources.illu4;
+                return k;
+
+            }
+        }
+
         public override Guid ComponentGuid
         {
             get
             {
-                return Guid.NewGuid();
+                return new Guid("354C43B7-3693-4B16-8B0B-A1CD58BAF975");
             }
         }
 
@@ -33,7 +43,7 @@ namespace MinSurface
 
             pManager.AddIntegerParameter("nrVerticesBoundary", "nrVerticesBoundary", "number of vertices along the boundary.", GH_ParamAccess.item, 20);
             pManager.AddIntegerParameter("Degree (optional)", "degree", "degree of the surface.", GH_ParamAccess.item, 0);
-            pManager.AddAngleParameter("Rotation angle of one of the curves around itself (optional)", "roationAngle", "rotation angle of the curves around itself", GH_ParamAccess.item, 0);
+            pManager.AddAngleParameter("Rotation angle of one of the curves around itself (optional)", "curve offset", "rotation angle of the curves around itself", GH_ParamAccess.item, 0);
 
         }
 
@@ -85,7 +95,7 @@ namespace MinSurface
             var c = new Circle(1.0);
             var kk = MeshingParameters.Default;
             kk.GridAmplification = (double)nrBoundaryVertices / 10.0;
-            var MM = Mesh.CreateFromPlanarBoundary(c.ToNurbsCurve(), kk, DocumentTolerance());
+            var MM = Mesh.CreateFromPlanarBoundary(c.ToNurbsCurve(), kk);
             
             // bottleneck            
             for (int ii = 0; ii < MM.Vertices.Count; ii++)
