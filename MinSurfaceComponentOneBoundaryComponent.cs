@@ -62,11 +62,12 @@ namespace MinSurface
             int nrCont = _targetCurve.ToNurbsCurve().Points.Count;
             int crDeg = _targetCurve.Degree;
 
-            int idealDegree = nrCont * crDeg;
-            int deg = Math.Min(Math.Max(25, idealDegree), 50);
-
-            //  number of boundary subdivisions
-            int _n = 23 * deg;
+            // if degree isn't specified, use this heuristic
+            // computationally, 25 is always doable, and more than 300 doesn't usually make sense
+            if (degree == 0) degree = Math.Min(Math.Max(25, nrCont * crDeg), 300);
+            
+            //  number of boundary subdivisions for computation of the polynomials
+            int _n = 23 * degree;
 
             double[] t = _targetCurve.DivideByCount(_n, true);
             var _targetPoints = Enumerable.Range(0, _n).Select(i => _targetCurve.PointAt(t[(i + (int) (angle / Math.PI / 2.0 * _n)) % _n])).ToList();
@@ -74,17 +75,18 @@ namespace MinSurface
             // now, do the actual work and compute the three complex polynomials
             // ok, let's get the coefficients
             List<double> xs1 = _targetPoints.Select(o => o.X).ToList(); // 1 ms
-            LaplaceData kx = new LaplaceData(xs1, deg);
+            LaplaceData kx = new LaplaceData(xs1, degree);
 
             List<double> ys1 = _targetPoints.Select(o => o.Y).ToList(); // 1 ms
-            LaplaceData ky = new LaplaceData(ys1, deg);
+            LaplaceData ky = new LaplaceData(ys1, degree);
             
             List<double> zs1 = _targetPoints.Select(o => o.Z).ToList(); // 1 ms
-            LaplaceData kkz = new LaplaceData(zs1, deg);
+            LaplaceData kkz = new LaplaceData(zs1, degree);
 
             var c = new Circle(1.0);
             var kk = MeshingParameters.Default;
-            kk.GridAmplification = (double)nrBoundaryVertices / 10.0;
+            kk.MinimumEdgeLength = 2 * Math.PI / (double)nrBoundaryVertices;
+            kk.MaximumEdgeLength = 2 * Math.PI / (double) nrBoundaryVertices * 2;
             var MM = Mesh.CreateFromPlanarBoundary(c.ToNurbsCurve(), kk, DocumentTolerance());
             
             // bottleneck            
