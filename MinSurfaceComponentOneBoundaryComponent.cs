@@ -31,7 +31,7 @@ namespace MinSurface
                 "The only requirement is that it be closed. " +
                 "This parameter is required.", GH_ParamAccess.item);
 
-            pManager.AddIntegerParameter("nrVerticesBoundary", "nrVerticesBoundary", "number of vertices along the boundary.", GH_ParamAccess.item, 20);
+            pManager.AddIntegerParameter("nrVerticesBoundary", "nrVerticesBoundary", "number of vertices along the boundary.", GH_ParamAccess.item, 300);
             pManager.AddIntegerParameter("Degree (optional)", "degree", "degree of the surface.", GH_ParamAccess.item, 0);
             pManager.AddAngleParameter("Rotation angle of one of the curves around itself (optional)", "roationAngle", "rotation angle of the curves around itself", GH_ParamAccess.item, 0);
 
