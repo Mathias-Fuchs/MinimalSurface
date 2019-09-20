@@ -40,6 +40,7 @@
     <Compile Include="MinSurfaceComponent.cs" />
     <Compile Include="MinSurfaceComponentOneBoundaryComponent.cs" />
     <Compile Include="MinSurfaceInfo.cs" />
+    <Compile Include="TweenerComponent.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\illu4.bmp" />
