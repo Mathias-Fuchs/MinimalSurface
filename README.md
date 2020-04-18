@@ -10,6 +10,9 @@ This yields an approximation because minimal surfaces enjoy the property that th
 
 Thus, we end up with an approximation. The approximation is perfect once the (u, v)-patch is isothermal.
 
-# Binary releases
+# Installation from the inary releases
 
-[Get your binary gha file here](https://github.com/Mathias-Fuchs/MinimalSurface/releases)
+    Download [MinSurfacev6.gha](https://github.com/Mathias-Fuchs/MinimalSurface/releases)
+    Right-click MinSurfacev6.gha > Properties > unblock
+    Drag and drop MinSurfacev6.gha into grasshopper
+
