@@ -12,7 +12,7 @@ Thus, we end up with an approximation. The approximation is perfect once the (u,
 
 # Installation from a github binary release
 
-* Download [MinSurfacev6.gha](https://github.com/Mathias-Fuchs/MinimalSurface/releases) from the release page
-* Right-click MinSurfacev6.gha > Properties > unblock
-* Drag and drop MinSurfacev6.gha into grasshopper
+* Download [the latest relase](https://github.com/Mathias-Fuchs/MinimalSurface/releases)
+* Extract and right-click the file with extension ".gha" > Properties > unblock
+* Drag and drop it into grasshopper
 
