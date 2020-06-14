@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
 using System.Linq;
+using System.IO;
 
 namespace MinSurface
 {
@@ -50,7 +51,7 @@ namespace MinSurface
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
             pManager.AddMeshParameter("Output mesh", "outputMesh", "The output mesh, an approximate minimal surface.", GH_ParamAccess.item);
-//            pManager.AddNumberParameter("Non-orthogonality", "", "", GH_ParamAccess.item);
+            //            pManager.AddNumberParameter("Non-orthogonality", "", "", GH_ParamAccess.item);
         }
 
         private static Mesh UncappedCylinder(int axis_divisions, int height_divisions)
@@ -189,22 +190,20 @@ namespace MinSurface
 
             DA.SetData(0, MMM);
 
-            //var Cyl = MM.DuplicateMesh();
-            //DA.SetData(1, Enumerable.Range(0, Cyl.Vertices.Count).Average(
-            //    ii =>
-            //        {
-            //            var x = Cyl.Vertices[ii].X;
-            //            var y = Cyl.Vertices[ii].Y;
-            //            var z = Cyl.Vertices[ii].Z;
-            //            var f = (R1 + z * (R2 - R1)) / Math.Sqrt(x * x + y * y);
-            //            var p = new Point2d(f * x, f * y);
+        }
+        protected override System.Drawing.Bitmap Icon
+        {
+            get
+            {
+                byte[] bc = System.Convert.FromBase64String("Qk32BgAAAAAAADYAAAAoAAAAGAAAABgAAAABABgAAAAAAAAAAADEDgAAxA4AAAAAAAAAAAAAqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdgHp2gHp2gHp2gHp2gHp2gHp2VVFOVVFOVVFOVVFOVVFOVVFOVVFOVVFOqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdVVFOAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdgHp2AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKikngHp2qqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdgHp2AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKikngHp2qqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdKiknAAAAAAAAAAAAAAAAAAAAAAAAAAAAKikngHp2qqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdVVFOAAAAAAAAAAAAAAAAAAAAKikngHp2qqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdKiknAAAAAAAAAAAAVVFOqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdVVFOAAAAAAAAAAAAAAAAgHp2qqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdgHp2KiknAAAAAAAAAAAAAAAAAAAAKiknqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdgHp2KiknAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVVFOqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdgHp2KiknAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVVFOqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdgHp2KiknAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVVFOqqOdqqOdqqOdqqOdqqOdgHp2KiknAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVVFOqqOdqqOdqqOdqqOdAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgHp2qqOdqqOdqqOdKiknAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVVFOqqOdqqOdqqOdqqOdVVFOVVFOKiknAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKiknVVFOgHp2qqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdgHp2gHp2gHp2gHp2gHp2gHp2gHp2gHp2gHp2qqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOd");
+                System.Drawing.Bitmap bmp;
+                using (var ms = new MemoryStream(bc))
+                {
+                    bmp = new System.Drawing.Bitmap(ms);
+                }
+                return bmp;
+            }
 
-            //            var gg = Math.Pow(
-            //                akx.drtimesdtheta(p) + aky.drtimesdtheta(p) + akkz.drtimesdtheta(p), 2);
-            //            return gg;
-            //        }
-            //    )
-            //);
         }
     }
 }

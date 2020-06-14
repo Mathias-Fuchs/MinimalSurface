@@ -39,10 +39,6 @@
     <Compile Include="LaplaceData.cs" />
     <Compile Include="MinSurfaceComponent.cs" />
     <Compile Include="MinSurfaceComponentOneBoundaryComponent.cs" />
-    <Compile Include="MinSurfaceInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\illu4.bmp" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Grasshopper, Version=6.4.18130.19341, Culture=neutral, PublicKeyToken=dda4f5ec2cd80803, processorArchitecture=MSIL">
@@ -55,12 +51,8 @@
     </Reference>
     <Reference Include="System.Drawing" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+    <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

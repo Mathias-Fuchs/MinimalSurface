@@ -4,6 +4,7 @@ using Grasshopper.Kernel;
 using Rhino.Geometry;
 using System.Linq;
 using System.Drawing;
+using System.IO;
 
 namespace MinSurface
 {
@@ -66,12 +67,12 @@ namespace MinSurface
             // if degree isn't specified, use this heuristic
             // computationally, 25 is always doable, and more than 300 doesn't usually make sense
             if (degree == 0) degree = Math.Min(Math.Max(25, nrCont * crDeg), 300);
-            
+
             //  number of boundary subdivisions for computation of the polynomials
             int _n = 23 * degree;
 
             double[] t = _targetCurve.DivideByCount(_n, true);
-            var _targetPoints = Enumerable.Range(0, _n).Select(i => _targetCurve.PointAt(t[(i + (int) (angle / Math.PI / 2.0 * _n)) % _n])).ToList();
+            var _targetPoints = Enumerable.Range(0, _n).Select(i => _targetCurve.PointAt(t[(i + (int)(angle / Math.PI / 2.0 * _n)) % _n])).ToList();
 
             // now, do the actual work and compute the three complex polynomials
             // ok, let's get the coefficients
@@ -80,27 +81,43 @@ namespace MinSurface
 
             List<double> ys1 = _targetPoints.Select(o => o.Y).ToList(); // 1 ms
             LaplaceData ky = new LaplaceData(ys1, degree);
-            
+
             List<double> zs1 = _targetPoints.Select(o => o.Z).ToList(); // 1 ms
             LaplaceData kkz = new LaplaceData(zs1, degree);
 
             var c = new Circle(1.0);
             var kk = MeshingParameters.Default;
             kk.MinimumEdgeLength = 2 * Math.PI / (double)nrBoundaryVertices;
-            kk.MaximumEdgeLength = 2 * Math.PI / (double) nrBoundaryVertices * 2;
+            kk.MaximumEdgeLength = 2 * Math.PI / (double)nrBoundaryVertices * 2;
             var MM = Mesh.CreateFromPlanarBoundary(c.ToNurbsCurve(), kk, DocumentTolerance());
 
             var MMM = new Mesh();
-            var mvl = MM.Vertices.Select(pp => { 
-                    var p = new Point2d(pp.X, pp.Y);
-                    return new Point3d(kx.eval(p), ky.eval(p), kkz.eval(p));
-                }
+            var mvl = MM.Vertices.Select(pp =>
+            {
+                var p = new Point2d(pp.X, pp.Y);
+                return new Point3d(kx.eval(p), ky.eval(p), kkz.eval(p));
+            }
                 );
 
             // bottleneck            
             MMM.Vertices.AddVertices(mvl);
             MMM.Faces.AddFaces(MM.Faces);
             DA.SetData(0, MMM);
+        }
+
+        protected override System.Drawing.Bitmap Icon
+        {
+            get
+            {
+                byte[] bc = System.Convert.FromBase64String("Qk14BgAAAAAAADYEAAAoAAAAGAAAABgAAAABAAgAAAAAAEICAADTIQAA0yEAAAAAAAAAAAAAAAAAAAEBAQACAgIAAwMDAAQEBAAFBQUABgYGAAcHBwAICAgACQkJAAoKCgALCwsADAwMAA0NDQAODg4ADw8PABAQEAAREREAEhISABMTEwAUFBQAFRUVABYWFgAXFxcAGBgYABkZGQAaGhoAGxsbABwcHAAdHR0AHh4eAB8fHwAgICAAISEhACIiIgAjIyMAJCQkACUlJQAmJiYAJycnACgoKAApKSkAKioqACsrKwAsLCwALS0tAC4uLgAvLy8AMDAwADExMQAyMjIAMzMzADQ0NAA1NTUANjY2ADc3NwA4ODgAOTk5ADo6OgA7OzsAPDw8AD09PQA + Pj4APz8 / AEBAQABBQUEAQkJCAENDQwBEREQARUVFAEZGRgBHR0cASEhIAElJSQBKSkoAS0tLAExMTABNTU0ATk5OAE9PTwBQUFAAUVFRAFJSUgBTU1MAVFRUAFVVVQBWVlYAV1dXAFhYWABZWVkAWlpaAFtbWwBcXFwAXV1dAF5eXgBfX18AYGBgAGFhYQBiYmIAY2NjAGRkZABlZWUAZmZmAGdnZwBoaGgAaWlpAGpqagBra2sAbGxsAG1tbQBubm4Ab29vAHBwcABxcXEAcnJyAHNzcwB0dHQAdXV1AHZ2dgB3d3cAeHh4AHl5eQB6enoAe3t7AHx8fAB9fX0Afn5 + AH9 / fwCAgIAAgYGBAIKCggCDg4MAhISEAIWFhQCGhoYAh4eHAIiIiACJiYkAioqKAIuLiwCMjIwAjY2NAI6OjgCPj48AkJCQAJGRkQCSkpIAk5OTAJSUlACVlZUAlpaWAJeXlwCYmJgAmZmZAJqamgCbm5sAnJycAJ2dnQCenp4An5 + fAKCgoAChoaEAoqKiAKOjowCkpKQApaWlAKampgCnp6cAqKioAKmpqQCqqqoAq6urAKysrACtra0Arq6uAK + vrwCwsLAAsbGxALKysgCzs7MAtLS0ALW1tQC2trYAt7e3ALi4uAC5ubkAurq6ALu7uwC8vLwAvb29AL6 + vgC / v78AwMDAAMHBwQDCwsIAw8PDAMTExADFxcUAxsbGAMfHxwDIyMgAycnJAMrKygDLy8sAzMzMAM3NzQDOzs4Az8 / PANDQ0ADR0dEA0tLSANPT0wDU1NQA1dXVANbW1gDX19cA2NjYANnZ2QDa2toA29vbANzc3ADd3d0A3t7eAN / f3wDg4OAA4eHhAOLi4gDj4 + MA5OTkAOXl5QDm5uYA5 + fnAOjo6ADp6ekA6urqAOvr6wDs7OwA7e3tAO7u7gDv7 + 8A8PDwAPHx8QDy8vIA8 / PzAPT09AD19fUA9vb2APf39wD4 + PgA + fn5APr6 + gD7 +/ sA / Pz8AP39 / QD +/ v4A////AMO+vbu6uLOurKqmpqapq7C2ur7AwsPFyLu6ubi2s66pqKWjpZ+ksbW3ur2/wMLEw7+9u7e0r7CvrKeorKmhrLW8v8HCxMO+xMK+ubWxtaaKorCusrevqbC1ubu9vLe5xr66uLW3s4N0k7e1t7u4sbOztr65tbS/yLu2uLjCl3B5ibe8ur2+tbPAvZqovLnExr66uLm6gG9pfrvDv8G9vMSthn+uvL/FxcC7ur+xdXBddcPLx8vFsJB5gKe9usTDxsC7vsS/fWBmape1r56FcHSPmbW7wMXDx8C+ubbMtHxzbGluZFphfZOIor+8xcTEx8LGrIao0dSejnxGU2p5gn2HuL7ExMTEx8LGroaJoKqTv5hMYnR5eW+kx8TGxMTFyMLGs42QioGX1qpsgY2LepbFwcTExcXFyMLEuZCPkIybwKaNoaebmcLHv7/AwsTFycLBwJeLj4yQm5SbrrCnu8e/v8DAv8DBx8K/yKKGjouDe32XrKy2xMHAwMDAwMDAw8K/yLCHjYh6aGqImq3Ewb/BwcDAwcHBxMK/wr+Qh4V1YWJ0lsLFwMDBwMDBwcHCxMK/vsmkfoNyYlZzvMnAwcHAwcHBwcLCxcK/v8XBhnZwUV6zzsDBwcHBwsLCwcLCxcK/v7/KtXxldLXQwMDBwcLCwsLDwsLDxsPAwMC/ybutyM6/wcHCwsLCwsLCwsPEx8DAwcDAwMfNxcDBwcLCwsLCwsPCw8TExMfExMTFxcXGxcXGxcbHxsbHx8fIyMfIywAA");
+                System.Drawing.Bitmap bmp;
+                using (var ms = new MemoryStream(bc))
+                {
+                    bmp = new System.Drawing.Bitmap(ms);
+                }
+
+                return bmp;
+            }
         }
 
     }
