@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
 using System.Linq;
+using System.Drawing;
 
 namespace MinSurface
 {
@@ -19,7 +20,7 @@ namespace MinSurface
         {
             get
             {
-                return Guid.NewGuid();
+                return new Guid("A857FF66-CD2E-4AEA-850A-555CBFE5D762");
             }
         }
 
@@ -88,19 +89,19 @@ namespace MinSurface
             kk.MinimumEdgeLength = 2 * Math.PI / (double)nrBoundaryVertices;
             kk.MaximumEdgeLength = 2 * Math.PI / (double) nrBoundaryVertices * 2;
             var MM = Mesh.CreateFromPlanarBoundary(c.ToNurbsCurve(), kk, DocumentTolerance());
-            
+
+            var MMM = new Mesh();
+            var mvl = MM.Vertices.Select(pp => { 
+                    var p = new Point2d(pp.X, pp.Y);
+                    return new Point3d(kx.eval(p), ky.eval(p), kkz.eval(p));
+                }
+                );
+
             // bottleneck            
-            for (int ii = 0; ii < MM.Vertices.Count; ii++)
-            {
-                var x = MM.Vertices[ii].X;
-                var y = MM.Vertices[ii].Y;
-                
-                var p = new Point2d(x, y);
-                MM.Vertices.SetVertex(ii, kx.eval(p), ky.eval(p), kkz.eval(p));
-            }
-
-            DA.SetData(0, MM);
-
+            MMM.Vertices.AddVertices(mvl);
+            MMM.Faces.AddFaces(MM.Faces);
+            DA.SetData(0, MMM);
         }
+
     }
 }

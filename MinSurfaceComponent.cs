@@ -6,9 +6,6 @@ using System.Linq;
 
 namespace MinSurface
 {
-
-
-
     public class MinSurfaceComponent : GH_Component
     {
 
@@ -23,8 +20,7 @@ namespace MinSurface
         {
             get
             {
-                return Guid.NewGuid();
-                // return new Guid("6679fe76-1914-4cf2-a2da-a3b12cef0ff3");
+                return new Guid("6679fe76-1914-4cf2-a2da-a3b12cef0ff3");
             }
         }
 
@@ -54,7 +50,7 @@ namespace MinSurface
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
             pManager.AddMeshParameter("Output mesh", "outputMesh", "The output mesh, an approximate minimal surface.", GH_ParamAccess.item);
-            pManager.AddNumberParameter("Non-orthogonality", "", "", GH_ParamAccess.item);
+//            pManager.AddNumberParameter("Non-orthogonality", "", "", GH_ParamAccess.item);
         }
 
         private static Mesh UncappedCylinder(int axis_divisions, int height_divisions)
@@ -171,45 +167,44 @@ namespace MinSurface
 
             var MM = UncappedCylinder(around, vertical);
 
-            var Cyl = MM.DuplicateMesh();
-
 
 
             // bottleneck
             // can't be done with MM.Vertices.GetEnumerator() I guess
 
-            for (int ii = 0; ii < MM.Vertices.Count; ii++)
+            var mvl = MM.Vertices.Select(pp =>
             {
-                var x = MM.Vertices[ii].X;
-                var y = MM.Vertices[ii].Y;
-                var z = MM.Vertices[ii].Z;
+                var x = pp.X;
+                var y = pp.Y;
+                var z = pp.Z;
                 var f = (R1 + z * (R2 - R1)) / Math.Sqrt(x * x + y * y);
                 var p = new Point2d(f * x, f * y);
-                MM.Vertices.SetVertex(ii, akx.eval(p), aky.eval(p), akkz.eval(p));
-            }
+                return new Point3d(akx.eval(p), aky.eval(p), akkz.eval(p));
+            });
+            var MMM = new Mesh();
+            MMM.Vertices.AddVertices(mvl);
 
-            DA.SetData(0, MM);
+            // bottleneck            
+            MMM.Faces.AddFaces(MM.Faces);
 
-            DA.SetData(1, Enumerable.Range(0, Cyl.Vertices.Count).Average(
-                ii =>
-                    {
-                        var x = Cyl.Vertices[ii].X;
-                        var y = Cyl.Vertices[ii].Y;
-                        var z = Cyl.Vertices[ii].Z;
-                        var f = (R1 + z * (R2 - R1)) / Math.Sqrt(x * x + y * y);
-                        var p = new Point2d(f * x, f * y);
+            DA.SetData(0, MMM);
 
-                        var gg = Math.Pow(
-                            akx.drtimesdtheta(p) + aky.drtimesdtheta(p) + akkz.drtimesdtheta(p), 2);
-                        return gg;
-                    }
-                )
-            );
+            //var Cyl = MM.DuplicateMesh();
+            //DA.SetData(1, Enumerable.Range(0, Cyl.Vertices.Count).Average(
+            //    ii =>
+            //        {
+            //            var x = Cyl.Vertices[ii].X;
+            //            var y = Cyl.Vertices[ii].Y;
+            //            var z = Cyl.Vertices[ii].Z;
+            //            var f = (R1 + z * (R2 - R1)) / Math.Sqrt(x * x + y * y);
+            //            var p = new Point2d(f * x, f * y);
 
-
-
-
-
+            //            var gg = Math.Pow(
+            //                akx.drtimesdtheta(p) + aky.drtimesdtheta(p) + akkz.drtimesdtheta(p), 2);
+            //            return gg;
+            //        }
+            //    )
+            //);
         }
     }
 }

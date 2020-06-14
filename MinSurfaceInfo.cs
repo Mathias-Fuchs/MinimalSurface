@@ -33,8 +33,7 @@ namespace MinSurface
         {
             get
             {
-                return Guid.NewGuid();
-                // return new Guid("932052de-9224-4ef9-aba0-dad6c996f7eb");
+                return new Guid("638FBE32-8B19-41CD-B786-F8CB7A20D55E");
             }
         }
         public override string AuthorName
@@ -48,7 +47,7 @@ namespace MinSurface
         {
             get
             {
-                return "mathias2975@gmail.com";
+                return "mathias@mathiasfuchs.de";
             }
         }
     }
