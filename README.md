@@ -16,3 +16,5 @@ Thus, we end up with an approximation. The approximation is perfect once the (u,
 * Extract and right-click the file with extension ".gha" > Properties > unblock
 * Drag and drop it into grasshopper
 
+or ...
+* Execute the command "TestPackageManager" and search for "MinSurface".
