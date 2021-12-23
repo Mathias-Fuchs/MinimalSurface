@@ -194,18 +194,6 @@ namespace MinSurface
 
         }
         protected override System.Drawing.Bitmap Icon
-        {
-            get
-            {
-                byte[] bc = System.Convert.FromBase64String("Qk32BgAAAAAAADYAAAAoAAAAGAAAABgAAAABABgAAAAAAAAAAADEDgAAxA4AAAAAAAAAAAAAqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdgHp2gHp2gHp2gHp2gHp2gHp2VVFOVVFOVVFOVVFOVVFOVVFOVVFOVVFOqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdVVFOAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdgHp2AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKikngHp2qqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdgHp2AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKikngHp2qqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdKiknAAAAAAAAAAAAAAAAAAAAAAAAAAAAKikngHp2qqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdVVFOAAAAAAAAAAAAAAAAAAAAKikngHp2qqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdKiknAAAAAAAAAAAAVVFOqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdVVFOAAAAAAAAAAAAAAAAgHp2qqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdgHp2KiknAAAAAAAAAAAAAAAAAAAAKiknqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdgHp2KiknAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVVFOqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdgHp2KiknAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVVFOqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdgHp2KiknAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVVFOqqOdqqOdqqOdqqOdqqOdgHp2KiknAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVVFOqqOdqqOdqqOdqqOdAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgHp2qqOdqqOdqqOdKiknAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVVFOqqOdqqOdqqOdqqOdVVFOVVFOKiknAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKiknVVFOgHp2qqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdgHp2gHp2gHp2gHp2gHp2gHp2gHp2gHp2gHp2qqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOdqqOd");
-                System.Drawing.Bitmap bmp;
-                using (var ms = new MemoryStream(bc))
-                {
-                    bmp = new System.Drawing.Bitmap(ms);
-                }
-                return bmp;
-            }
-
-        }
+            => new System.Drawing.Bitmap(Properties.Resources.icon03);
     }
 }
