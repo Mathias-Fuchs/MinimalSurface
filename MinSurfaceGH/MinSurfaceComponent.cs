@@ -4,6 +4,7 @@ using Grasshopper.Kernel;
 using Rhino.Geometry;
 using System.Linq;
 using System.IO;
+using System.Reflection;
 
 namespace MinSurface
 {
@@ -91,15 +92,17 @@ namespace MinSurface
                      );
                 }
             }
-
             return M;
-
         }
 
-
-
         protected override void SolveInstance(IGH_DataAccess DA)
-        {// the input curve
+        {
+            System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            System.Diagnostics.FileVersionInfo fvi = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly.Location);
+            string version = fvi.FileVersion;
+            Rhino.RhinoApp.WriteLine("Minimal surface component, version " + version);
+
+// the input curve
             Curve tc = null;
             Curve tc2 = null;
             int vertical = 0;
@@ -168,11 +171,7 @@ namespace MinSurface
 
             var MM = UncappedCylinder(around, vertical);
 
-
-
-            // bottleneck
-            // can't be done with MM.Vertices.GetEnumerator() I guess
-
+            // bottleneck ... so here, parallelization is worth it
             var mvl = MM.Vertices.Select(pp =>
             {
                 var x = pp.X;
@@ -182,10 +181,13 @@ namespace MinSurface
                 var p = new Point2d(f * x, f * y);
                 return new Point3d(akx.eval(p), aky.eval(p), akkz.eval(p));
             });
+
             var MMM = new Mesh();
+            MMM.Vertices.Capacity = MM.Vertices.Count;
             MMM.Vertices.AddVertices(mvl);
 
             // bottleneck            
+            MMM.Faces.Capacity = MM.Faces.Count;
             MMM.Faces.AddFaces(MM.Faces);
 
             DA.SetData(0, MMM);
