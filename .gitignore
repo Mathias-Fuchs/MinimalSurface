@@ -189,3 +189,5 @@ UpgradeLog*.htm
 
 # Microsoft Fakes
 FakesAssemblies/
+/yakpackage
+/RR.ps1
