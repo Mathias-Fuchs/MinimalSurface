@@ -191,3 +191,4 @@ UpgradeLog*.htm
 FakesAssemblies/
 /yakpackage
 /RR.ps1
+/MinSurfaceGH/packages
