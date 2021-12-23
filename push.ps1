@@ -14,4 +14,5 @@ Yak.exe push $publishee
 
 New-Item -Path ..\..\..\AppData\Roaming\McNeel\Rhinoceros\packages\7.0\MinSurface -Name $args[1] -ItemType "directory";
 
-.\printOccuringVersions.ps1
+Yak.exe search MinSurface | sed 's/.*(//g' | sed 's/).*//g'
+# check with .\printOccuringVersions.ps1 if renaming worked
