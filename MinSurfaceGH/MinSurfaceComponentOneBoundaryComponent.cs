@@ -105,7 +105,7 @@ namespace MinSurface
             DA.SetData(0, MMM);
         }
 
-        protected override System.Drawing.Bitmap Icon => new System.Drawing.Bitmap(Properties.Resources.icon04);
+        protected override System.Drawing.Bitmap Icon => Properties.Resources.icon03_vfe_icon.ToBitmap();
 
     }
 }

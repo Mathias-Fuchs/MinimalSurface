@@ -194,6 +194,6 @@ namespace MinSurface
 
         }
         protected override System.Drawing.Bitmap Icon
-            => new System.Drawing.Bitmap(Properties.Resources.icon03);
+            => Properties.Resources.icon04_tUT_icon.ToBitmap(); 
     }
 }

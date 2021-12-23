@@ -61,22 +61,22 @@ namespace MinSurface.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        internal static System.Drawing.Bitmap icon03 {
+        internal static System.Drawing.Icon icon03_vfe_icon {
             get {
-                object obj = ResourceManager.GetObject("icon03", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
+                object obj = ResourceManager.GetObject("icon03_vfe_icon", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
             }
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        internal static System.Drawing.Bitmap icon04 {
+        internal static System.Drawing.Icon icon04_tUT_icon {
             get {
-                object obj = ResourceManager.GetObject("icon04", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
+                object obj = ResourceManager.GetObject("icon04_tUT_icon", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
             }
         }
     }
