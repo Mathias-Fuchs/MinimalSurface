@@ -13,19 +13,12 @@ namespace MinSurface
 
         public MinSurfaceComponent()
           : base("MiniTwo", "minitwo",
-              "Computes an approximate minimal surface (soap film) inside two given closed curves.",
-              "Mathias", "Geometry")
-        {
-        }
+              "Computes an approximate minimal surface (soap film) inside one or two closed curves.",
+              "MinSurface", "Geometry")
+        { }
 
-        public override Guid ComponentGuid
-        {
-            get
-            {
-                return new Guid("6679fe76-1914-4cf2-a2da-a3b12cef0ff3");
-            }
-        }
-
+        public override Guid ComponentGuid => new Guid("6679fe76-1914-4cf2-a2da-a3b12cef0ff3");
+            
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddCurveParameter("Input curve (required)", "inputCurve", "The first closed" +
@@ -101,8 +94,11 @@ namespace MinSurface
             System.Diagnostics.FileVersionInfo fvi = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly.Location);
             string version = fvi.FileVersion;
             Rhino.RhinoApp.WriteLine("Minimal surface component, version " + version);
+            Rhino.RhinoApp.WriteLine("GPL licensed, source: https://github.com/Mathias-Fuchs/MinimalSurface");
+            Rhino.RhinoApp.WriteLine("C Mathias Fuchs, https://mathiasfuchs.com");
 
-// the input curve
+
+            // the input curve
             Curve tc = null;
             Curve tc2 = null;
             int vertical = 0;
@@ -171,7 +167,7 @@ namespace MinSurface
 
             var MM = UncappedCylinder(around, vertical);
 
-            // bottleneck ... so here, parallelization is worth it
+
             var mvl = MM.Vertices.Select(pp =>
             {
                 var x = pp.X;
@@ -184,16 +180,22 @@ namespace MinSurface
 
             var MMM = new Mesh();
             MMM.Vertices.Capacity = MM.Vertices.Count;
+
+            // bottleneck ... so here, parallelization would be nice but the .AddVertices method can not deal with a parallel queryable, so it is not clear how to parallelize this.
             MMM.Vertices.AddVertices(mvl);
 
-            // bottleneck            
+            // also bottleneck            
             MMM.Faces.Capacity = MM.Faces.Count;
             MMM.Faces.AddFaces(MM.Faces);
+            
+            if (MMM.Faces.GetClashingFacePairs(1).Any())
+                this.AddRuntimeMessage(
+                    GH_RuntimeMessageLevel.Warning,
+                    "The resulting mesh has self-intersections. Modifying the rotation angle and flip switch input parameters can solve this.");
 
             DA.SetData(0, MMM);
-
         }
         protected override System.Drawing.Bitmap Icon
-            => Properties.Resources.icon04_tUT_icon.ToBitmap(); 
+            => Properties.Resources.icon04_tUT_icon.ToBitmap();
     }
 }

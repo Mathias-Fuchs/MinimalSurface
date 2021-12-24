@@ -7,9 +7,7 @@ $files =
     "MinSurfaceGH\Properties\AssemblyInfo.cs";
 
 ForEach($file in $files) {
-    if (!(Test-Path $file)) {
-        throw "File " + $file + " not found!";
-    }
+    if (!(Test-Path $file)) {throw "File " + $file + " not found!";}
     Write-Host $file -ForegroundColor Green;
     (Get-Content $file).Replace($args[0], $args[1]) | Set-Content $file
 }
