@@ -12,18 +12,10 @@ namespace MinSurface
     {
         public MinSurfaceComponentOneBoundaryComponent()
           : base("MiniOne", "miniOne",
-              "Computes an approximate minimal surface (soap film) inside one given closed curves.",
-              "Mathias", "Geometry")
-        {
-        }
+              "Computes an approximate minimal surface (soap film) inside a closed curve.",
+              "MinSurface", "Geometry") {}
 
-        public override Guid ComponentGuid
-        {
-            get
-            {
-                return new Guid("A857FF66-CD2E-4AEA-850A-555CBFE5D762");
-            }
-        }
+        public override Guid ComponentGuid => new Guid("A857FF66-CD2E-4AEA-850A-555CBFE5D762");
 
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
@@ -35,7 +27,7 @@ namespace MinSurface
 
             pManager.AddIntegerParameter("nrVerticesBoundary", "nrVerticesBoundary", "number of vertices along the boundary.", GH_ParamAccess.item, 300);
             pManager.AddIntegerParameter("Degree (optional)", "degree", "degree of the surface.", GH_ParamAccess.item, 0);
-            pManager.AddAngleParameter("Rotation angle of one of the curves around itself (optional)", "roationAngle", "rotation angle of the curves around itself", GH_ParamAccess.item, 0);
+            pManager.AddAngleParameter("Rotation angle of the curve (optional)", "rotationAngle", "rotation angle of the curve", GH_ParamAccess.item, 0);
 
         }
 
@@ -46,6 +38,13 @@ namespace MinSurface
 
         protected override void SolveInstance(IGH_DataAccess DA)
         {
+            System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            System.Diagnostics.FileVersionInfo fvi = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly.Location);
+            string version = fvi.FileVersion;
+            Rhino.RhinoApp.WriteLine("Minimal surface component, version " + version);
+            Rhino.RhinoApp.WriteLine("GPLv3 licensed, source: https://github.com/Mathias-Fuchs/MinimalSurface");
+            Rhino.RhinoApp.WriteLine("Copyright Mathias Fuchs 2020 - 2021, https://mathiasfuchs.com");
+
             Curve tc = null;
             int nrBoundaryVertices = 0;
             int degree = 0;
@@ -100,8 +99,15 @@ namespace MinSurface
                 );
 
             // bottleneck            
+            MMM.Vertices.Capacity = MM.Vertices.Count;
             MMM.Vertices.AddVertices(mvl);
+            MMM.Faces.Capacity = MM.Faces.Count;
             MMM.Faces.AddFaces(MM.Faces);
+
+            if (MMM.Faces.GetClashingFacePairs(1).Any())
+                this.AddRuntimeMessage(
+                    GH_RuntimeMessageLevel.Warning,
+                    "The resulting mesh has self-intersections. Modifying the rotation angle input parameter can solve this.");
             DA.SetData(0, MMM);
         }
 

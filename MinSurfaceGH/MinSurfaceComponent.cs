@@ -13,7 +13,7 @@ namespace MinSurface
 
         public MinSurfaceComponent()
           : base("MiniTwo", "minitwo",
-              "Computes an approximate minimal surface (soap film) inside one or two closed curves.",
+              "Computes an approximate minimal surface (soap film) inside two closed curves.",
               "MinSurface", "Geometry")
         { }
 
@@ -36,7 +36,7 @@ namespace MinSurface
             pManager.AddIntegerParameter("nrVerticesAround (optional)", "nrVerticesAround", "number of vertices around the cylinder.", GH_ParamAccess.item, 18);
             pManager.AddIntegerParameter("Degree (optional)", "degree", "degree of the surface.", GH_ParamAccess.item, 0);
 
-            pManager.AddAngleParameter("Rotation angle of one of the curves around itself (optional)", "roationAngle", "rotation angle of the curves around itself", GH_ParamAccess.item, 0);
+            pManager.AddAngleParameter("Rotation angle of one of the curves around itself (optional)", "rotationAngle", "rotation angle of the curves around itself", GH_ParamAccess.item, 0);
 
             pManager.AddBooleanParameter("Flip one curve (optional)", "flip", "flip one curve? try this to prevent self-intersection.", GH_ParamAccess.item, false);
 
@@ -94,8 +94,8 @@ namespace MinSurface
             System.Diagnostics.FileVersionInfo fvi = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly.Location);
             string version = fvi.FileVersion;
             Rhino.RhinoApp.WriteLine("Minimal surface component, version " + version);
-            Rhino.RhinoApp.WriteLine("GPL licensed, source: https://github.com/Mathias-Fuchs/MinimalSurface");
-            Rhino.RhinoApp.WriteLine("C Mathias Fuchs, https://mathiasfuchs.com");
+            Rhino.RhinoApp.WriteLine("GPLv3 licensed, source: https://github.com/Mathias-Fuchs/MinimalSurface");
+            Rhino.RhinoApp.WriteLine("Copyright Mathias Fuchs 2020 - 2021, https://mathiasfuchs.com");
 
 
             // the input curve

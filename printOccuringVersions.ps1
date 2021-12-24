@@ -14,4 +14,7 @@ ForEach($file in $files) {
     Write-Host $file -ForegroundColor Green;
     (Get-Content $file) | Select-String -Pattern "0.1" | Write;
 }
-       
+
+Write-Host "Gha assembly:" -ForegroundColor Green;
+
+(Get-Item yakpackage\*.gha).VersionInfo | Write-Output;
