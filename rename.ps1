@@ -1,10 +1,11 @@
 
 $files = 
-    "RR.ps1",
-    "yakpackage\manifest.yml",
-    "MinSurfaceGH\MinSurfacev7GH.csproj",
-# "MinSurfaceCommands\MinSurfaceCommands.vcxproj",
-    "MinSurfaceGH\Properties\AssemblyInfo.cs";
+ "RR.ps1",
+ "yakpackage\manifest.yml",
+ "MinSurfaceGH\MinSurfacev7GH.csproj",
+ "MinSurfaceCommands\MinSurfaceCommands.vcxproj",
+ "MinSurfaceCommands\MinSurfaceCommands.rc",
+ "MinSurfaceGH\Properties\AssemblyInfo.cs";
 
 ForEach($file in $files) {
     if (!(Test-Path $file)) {throw "File " + $file + " not found!";}

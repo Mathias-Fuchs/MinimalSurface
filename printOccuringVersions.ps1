@@ -3,7 +3,8 @@ $files =
     "RR.ps1",
     "yakpackage\manifest.yml",
     "MinSurfaceGH/MinSurfacev7GH.csproj",
-    # "MinSurfaceCommands\MinSurfaceCommands.vcxproj",
+    "MinSurfaceCommands\MinSurfaceCommands.vcxproj",
+    "MinSurfaceCommands\MinSurfaceCommands.rc",
     "MinSurfaceGH/Properties/AssemblyInfo.cs";
 
 
