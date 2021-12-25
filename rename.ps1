@@ -4,6 +4,7 @@ $files =
  "yakpackage\manifest.yml",
  "MinSurfaceGH\MinSurfacev7GH.csproj",
  "MinSurfaceCommands\MinSurfaceCommands.vcxproj",
+ "MinSurfaceCommands\MinSurfaceCommandsPlugIn.cpp",
  "MinSurfaceCommands\MinSurfaceCommands.rc",
  "MinSurfaceGH\Properties\AssemblyInfo.cs";
 
