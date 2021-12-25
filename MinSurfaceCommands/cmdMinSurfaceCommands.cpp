@@ -85,53 +85,56 @@ CRhinoCommand::result MiniOneCommand::RunCommand(const CRhinoCommandContext& con
 
 	CRhinoGetObject go;
 	int degree = 100;
-	int nrBoundaryVertices = 1000;
-	go.AddCommandOptionInteger(CRhinoCommandOptionName(L"Degree", L"Degree (of approximation, default 100)"), &degree, L"Degree of output mesh as surface", 0, 10000);
-	go.AddCommandOptionInteger(CRhinoCommandOptionName(L"OutputMeshDensity", L"Output mesh density (default 1000)"), &nrBoundaryVertices, L"Number of vertices along the boundary of the output mesh", 100, 100000);
+	int nrBoundaryVertices = 300;
+	go.AddCommandOptionInteger(RHCMDOPTNAME(L"Degree"), &degree, L"Degree of output mesh as surface", 0, 10000);
+	go.AddCommandOptionInteger(RHCMDOPTNAME(L"MeshDensity"), &nrBoundaryVertices, L"Number of vertices along the boundary of the output mesh", 100, 100000);
 	go.SetCommandPrompt(L"Select a closed curve for the minimal surface boundary.");
 	go.SetGeometryFilter(CRhinoGetObject::curve_object);
 	go.SetGeometryAttributeFilter(CRhinoGetObject::closed_curve);
-	go.GetObjects();
-	if (go.Result() != CRhinoGet::object) return CRhinoCommand::failure;
-	const ON_Curve* _targetCurve = go.Object(0).Curve();
-	if (!_targetCurve) return CRhinoCommand::failure;
+	while (true) {
+		CRhinoGet::result res = go.GetObjects(1, 1);
+		if (res == CRhinoGet::option) continue;
+		if (res != CRhinoGet::object) return CRhinoCommand::cancel;
+		break;
+	}
+	const ON_Curve* targetCurve = go.Object(0).Curve();
+	if (!targetCurve) return CRhinoCommand::failure;
 
-	// number of control points, tells about the complexity of the curve
-	int nrCont = _targetCurve->NurbsCurve()->CVCount();
-	int crDeg = _targetCurve->Degree();
+	//// number of control points, tells about the complexity of the curve
+	//int nrCont = _targetCurve->NurbsCurve()->CVCount();
+	//int crDeg = _targetCurve->Degree();
 
 	//  number of boundary subdivisions for computation of the polynomials
-	// one needs to fit about 2*degree real parameters, each observation gives one real observation
+	// one needs to fit about 2*degree real parameters, each subdivision gives one real observation
 	int n = 100 * degree;
 	double t0, t1;
-	_targetCurve->GetDomain(&t0, &t1);
+	targetCurve->GetDomain(&t0, &t1);
 
-	std::vector<double> _targetPointsx, _targetPointsy, _targetPointsz;
+	std::vector<double> targetPointsx, targetPointsy, targetPointsz;
 
-	_targetPointsx.reserve(n);
-	_targetPointsy.reserve(n);
-	_targetPointsz.reserve(n);
+	targetPointsx.reserve(n);
+	targetPointsy.reserve(n);
+	targetPointsz.reserve(n);
 
 	std::vector<double> s(n);
 	std::vector<double> t(n);
 
 	for (int i = 0; i < n; i++) s[i] = (double) i / n;
 	
-	_targetCurve->GetNormalizedArcLengthPoints(n, s.data(), t.data());
-
+	targetCurve->GetNormalizedArcLengthPoints(n, s.data(), t.data());
 
 	for (int i = 0; i < n; i++) {
-		auto p = _targetCurve->PointAt(t[i]);
-		_targetPointsx.push_back(p.x);
-		_targetPointsy.push_back(p.y);
-		_targetPointsz.push_back(p.z);
+		auto p = targetCurve->PointAt(t[i]);
+		targetPointsx.push_back(p.x);
+		targetPointsy.push_back(p.y);
+		targetPointsz.push_back(p.z);
 	}
 
-	LaplaceData kx(_targetPointsx, degree);
-	LaplaceData ky(_targetPointsy, degree);
-	LaplaceData kz(_targetPointsz, degree);
+	LaplaceData kx(targetPointsx, degree);
+	LaplaceData ky(targetPointsy, degree);
+	LaplaceData kz(targetPointsz, degree);
 
-	ON_Mesh disk = CreateDiskMesh(sqrt(nrBoundaryVertices));
+	ON_Mesh disk = CreateDiskMesh(nrBoundaryVertices / 4);
 
 	int nv = disk.VertexCount();
 	for (int i = 0; i < nv; i++) {

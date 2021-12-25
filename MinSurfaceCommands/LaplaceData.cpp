@@ -33,10 +33,6 @@ LaplaceData::LaplaceData(const std::vector<double>& targets, int degree) : targe
 double LaplaceData::eval(double x, double y) {
 	double r = sqrt(x * x + y * y);
 	double theta = atan2(y, x);
-	//if (r > 1-1e-2) {
-	//	int ind = (int)(this->k * (theta + 2 * M_PI) / 2 / M_PI);
-	//	return this->targets[ind % this->k];
-	//}
 	double sum = this->a0;
 	for (int i = 1; i < this->degree; i++)
 		sum += pow(r, i) * (this->an[i] * cos(i * theta) + this->bn[i] * sin(i * theta));
