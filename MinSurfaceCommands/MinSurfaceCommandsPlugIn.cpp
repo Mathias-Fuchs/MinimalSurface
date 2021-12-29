@@ -26,7 +26,7 @@ RHINO_PLUG_IN_ID(L"219FFEA1-4ED5-45E9-96F7-42FB81EEF80A");
 
 // Rhino plug-in version
 // Provide a version number string for this plug-in.
-RHINO_PLUG_IN_VERSION("0.1.3.7")
+RHINO_PLUG_IN_VERSION("0.1.3.8")
 
 // Rhino plug-in description
 // Provide a description of this plug-in.

@@ -90,6 +90,13 @@ CRhinoCommand::result MiniOneCommand::RunCommand(const CRhinoCommandContext& con
 		return CRhinoCommand::failure;
 	}
 
+	ON_wString str;
+	str.Format(L"MinSurface plugin version %s \n", MinSurfaceCommandsPlugIn().PlugInVersion());
+	RhinoApp().Print(str);
+	RhinoApp().Print(L"GPLv3 licensed, source: https://github.com/Mathias-Fuchs/MinimalSurface \n");
+	RhinoApp().Print(L"Copyright Mathias Fuchs 2020 - 2021, https://mathiasfuchs.com \n");
+	RhinoApp().Print(L"This is the command line interface, please make sure to try out the Grasshopper interface as well.\n");
+
 	CRhinoGetObject go;
 	int degree = 40;
 	int nrBoundaryVertices = 300;
@@ -155,6 +162,9 @@ CRhinoCommand::result MiniOneCommand::RunCommand(const CRhinoCommandContext& con
 	}
 
 	RhinoApp().ActiveDoc()->AddMeshObject(disk);
+	context.m_doc.Redraw();
+
+
 	return CRhinoCommand::success;
 }
 
@@ -186,6 +196,13 @@ CRhinoCommand::result MiniTwoCommand::RunCommand(const CRhinoCommandContext& con
 		RhinoApp().Print(L"The minimal surface commands only work in interactive context.");
 		return CRhinoCommand::failure;
 	}
+
+	ON_wString str;
+	str.Format(L"MinSurface plugin version %s \n", MinSurfaceCommandsPlugIn().PlugInVersion());
+	RhinoApp().Print(str);
+	RhinoApp().Print(L"GPLv3 licensed, source: https://github.com/Mathias-Fuchs/MinimalSurface \n");
+	RhinoApp().Print(L"Copyright Mathias Fuchs 2020 - 2021, https://mathiasfuchs.com \n");
+	RhinoApp().Print(L"This is the command line interface, please make sure to try out the Grasshopper interface as well.\n");
 
 	CRhinoGetObject go;
 	int degree = 50;
@@ -270,5 +287,12 @@ CRhinoCommand::result MiniTwoCommand::RunCommand(const CRhinoCommandContext& con
 	}
 
 	RhinoApp().ActiveDoc()->AddMeshObject(disk);
+	context.m_doc.Redraw();
+	
+	ON_SimpleArray<ON_2dex> pairs;
+	disk.GetClashingFacePairs(1, pairs);
+	if (pairs.Count())
+		RhinoApp().Print(L"There self-intersections. Try to rotate and/or flip the input curves. This might be easier with the MinSurface Grasshopper components.\n");
+
 	return CRhinoCommand::success;
 }

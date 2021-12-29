@@ -116,12 +116,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Mathias Fuchs"
             VALUE "FileDescription", "MinSurface"
-            VALUE "FileVersion", "0.1.3.7"
+            VALUE "FileVersion", "0.1.3.8"
             VALUE "InternalName", "MinSurface.rhp"
             VALUE "LegalCopyright", "Copyright © 2021, Mathias Fuchs"
             VALUE "OriginalFilename", "MinSurface.rhp"
             VALUE "ProductName", "MinSurface"
-            VALUE "ProductVersion", "0.1.3.7"
+            VALUE "ProductVersion", "0.1.3.8"
         END
     END
     BLOCK "VarFileInfo"
