@@ -1,4 +1,4 @@
-﻿// MinSurfaceCommandsPlugIn.cpp : defines the initialization routines for the plug-in.
+// MinSurfaceCommandsPlugIn.cpp : defines the initialization routines for the plug-in.
 //
 
 #include "StdAfx.h"
@@ -26,11 +26,11 @@ RHINO_PLUG_IN_ID(L"219FFEA1-4ED5-45E9-96F7-42FB81EEF80A");
 
 // Rhino plug-in version
 // Provide a version number string for this plug-in.
-RHINO_PLUG_IN_VERSION("0.1.3.6")
+RHINO_PLUG_IN_VERSION("0.1.3.7")
 
 // Rhino plug-in description
 // Provide a description of this plug-in.
-RHINO_PLUG_IN_DESCRIPTION(L"MinSurface plug-in for Rhinoceros®");
+RHINO_PLUG_IN_DESCRIPTION(L"MinSurface plug-in for Rhinoceros�");
 
 // Rhino plug-in icon resource id
 // Provide an icon resource this plug-in.

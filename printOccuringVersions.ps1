@@ -21,3 +21,4 @@ Write-Host "Gha assembly:" -ForegroundColor Green;
 
 Write-Host "Native dll:" -ForegroundColor Green;
 dumpbin /dependents yakpackage\*.rhp
+dumpbin /headers yakpackage\*.rhp

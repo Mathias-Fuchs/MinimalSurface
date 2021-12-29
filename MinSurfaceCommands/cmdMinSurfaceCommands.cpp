@@ -6,6 +6,8 @@
 ON_Mesh CreateDiskMesh(int n) {
 	if (n < 2) return ON_Mesh();
 	ON_Mesh m;
+	m.ReserveVertexCapacity(n * n);
+	m.m_F.Reserve(n * n - 2 * n + 1);
 	int quadcount = 0;
 	for (int i = 0; i < n; i++)
 		for (int j = 0; j < n; j++) {
@@ -27,6 +29,37 @@ ON_Mesh CreateDiskMesh(int n) {
 }
 
 
+ON_Mesh CreateUncappedCylinder(int axis_divisions, int height_divisions) {
+	ON_Mesh M;
+	if (axis_divisions <= 0 || height_divisions <= 0) return M;
+	M.ReserveVertexCapacity(axis_divisions * height_divisions);
+	M.m_F.Reserve(2 * (axis_divisions * (height_divisions - 1)));
+
+	int vc = 0;
+	for (int th = 0; th < axis_divisions; th++)
+	{
+		double x = cos(2.0 * M_PI * th / (double)axis_divisions);
+		double y = sin(2.0 * M_PI * th / (double)axis_divisions);
+
+		for (int h = 0; h < height_divisions; h++)
+		{
+			double z = h / (double)(height_divisions - 1);
+			M .SetVertex(vc++, ON_3dPoint(x, y, z));
+		}
+	}
+
+	int fc = 0;
+	for (int th = 0; th < axis_divisions; th++)
+		for (int h = 1; h < height_divisions; h++)
+			M.SetQuad(fc++,
+				((th + 0) % axis_divisions) * height_divisions + (h - 1),
+				((th + 1) % axis_divisions) * height_divisions + (h - 1),
+				((th + 1) % axis_divisions) * height_divisions + (h + 0),
+				((th + 0) % axis_divisions) * height_divisions + (h + 0)
+			);
+	return M;
+}
+
 
 
 // Do NOT put the definition of class CCommandMinSurfaceCommands in a header
@@ -37,54 +70,28 @@ ON_Mesh CreateDiskMesh(int n) {
 class MiniOneCommand : public CRhinoCommand
 {
 public:
-	// The one and only instance of CCommandMinSurfaceCommands is created below.
-	// No copy constructor or operator= is required.
-	// Values of member variables persist for the duration of the application.
-
-	// CCommandMinSurfaceCommands::CCommandMinSurfaceCommands()
-	// is called exactly once when static theMinSurfaceCommandsCommand is created.
 	MiniOneCommand() = default;
-
-	// CCommandMinSurfaceCommands::~CCommandMinSurfaceCommands()
-	// is called exactly once when static theMinSurfaceCommandsCommand is destroyed.
-	// The destructor should not make any calls to the Rhino SDK. 
-	// If your command has persistent settings, then override 
-	// CRhinoCommand::SaveProfile and CRhinoCommand::LoadProfile.
 	~MiniOneCommand() = default;
-
-	// Returns a unique UUID for this command.
-	// If you try to use an id that is already being used, then
-	// your command will not work. Use GUIDGEN.EXE to make unique UUID.
-	UUID CommandUUID() override
-	{
-		// {F1C2449E-7E92-4DE0-A5F1-5A1281E81D62}
+	UUID CommandUUID() override	{
 		static const GUID MinSurfaceCommandsCommand_UUID =
 		{ 0xF1C2449E, 0x7E92, 0x4DE0, { 0xA5, 0xF1, 0x5A, 0x12, 0x81, 0xE8, 0x1D, 0x62 } };
 		return MinSurfaceCommandsCommand_UUID;
 	}
-
-	// Returns the English command name.
-	// If you want to provide a localized command name, then override 
-	// CRhinoCommand::LocalCommandName.
 	const wchar_t* EnglishCommandName() override { return L"MinSurfFromCircularBoundary"; }
-
-	// Rhino calls RunCommand to run the command.
 	CRhinoCommand::result RunCommand(const CRhinoCommandContext& context) override;
 };
 
-// The one and only CCommandMinSurfaceCommands object
-// Do NOT create any other instance of a CCommandMinSurfaceCommands class.
 static class MiniOneCommand theMinSurfaceCommandsCommand;
 
 CRhinoCommand::result MiniOneCommand::RunCommand(const CRhinoCommandContext& context) {
 
 	if (!context.IsInteractive()) {
-		RhinoApp().Print(L"The minimal surface command only works in interactive context.");
+		RhinoApp().Print(L"The minimal surface commands only work in interactive context.");
 		return CRhinoCommand::failure;
 	}
 
 	CRhinoGetObject go;
-	int degree = 100;
+	int degree = 40;
 	int nrBoundaryVertices = 300;
 	go.AddCommandOptionInteger(RHCMDOPTNAME(L"Degree"), &degree, L"Degree of output mesh as surface", 0, 10000);
 	go.AddCommandOptionInteger(RHCMDOPTNAME(L"MeshDensity"), &nrBoundaryVertices, L"Number of vertices along the boundary of the output mesh", 100, 100000);
@@ -144,6 +151,121 @@ CRhinoCommand::result MiniOneCommand::RunCommand(const CRhinoCommandContext& con
 			ky.eval(p.x, p.y),
 			kz.eval(p.x, p.y)
 		);
+		disk.SetVertex(i, goal);
+	}
+
+	RhinoApp().ActiveDoc()->AddMeshObject(disk);
+	return CRhinoCommand::success;
+}
+
+
+
+
+
+
+class MiniTwoCommand : public CRhinoCommand
+{
+public:
+	MiniTwoCommand() = default;
+	UUID CommandUUID() override
+	{
+		// {874500EC-F717-4972-B992-2E606B1FE350}
+		static const GUID MinSurfFromTwoBoundariesCommand_UUID =
+		{ 0x874500EC, 0xF717, 0x4972, { 0xB9, 0x92, 0x2E, 0x60, 0x6B, 0x1F, 0xE3, 0x50 } };
+		return MinSurfFromTwoBoundariesCommand_UUID;
+	}
+	const wchar_t* EnglishCommandName() override { return L"MinSurfFromTwoBoundaries"; }
+	CRhinoCommand::result RunCommand(const CRhinoCommandContext& context) override;
+};
+
+static class MiniTwoCommand theMinSurfFromTwoBoundariesCommand;
+
+CRhinoCommand::result MiniTwoCommand::RunCommand(const CRhinoCommandContext& context)
+{
+	if (!context.IsInteractive()) {
+		RhinoApp().Print(L"The minimal surface commands only work in interactive context.");
+		return CRhinoCommand::failure;
+	}
+
+	CRhinoGetObject go;
+	int degree = 50;
+	int nrVerticesAround = 100;
+	int nrVerticesVertical = 100;
+	go.AddCommandOptionInteger(RHCMDOPTNAME(L"Degree"), &degree, L"Degree of output mesh as surface", 0, 10000);
+	go.AddCommandOptionInteger(RHCMDOPTNAME(L"NverticesAround"), &nrVerticesAround, L"Number of vertices in the ``horizontal'' direction", 10, 100000);
+	go.AddCommandOptionInteger(RHCMDOPTNAME(L"NverticesVertical"), &nrVerticesVertical, L"Number of vertices in the ``vertical'' direction", 10, 100000);
+
+	go.SetCommandPrompt(L"Select two closed curves for the minimal surface boundary.");
+	go.SetGeometryFilter(CRhinoGetObject::curve_object);
+	go.SetGeometryAttributeFilter(CRhinoGetObject::closed_curve);
+	while (true) {
+		CRhinoGet::result res = go.GetObjects(1, 2);
+		if (res == CRhinoGet::option) continue;
+		if (res != CRhinoGet::object) return CRhinoCommand::cancel;
+		if (go.ObjectCount() == 2) break;
+	}
+	const ON_Curve* targetCurve1 = go.Object(0).Curve();
+	const ON_Curve* targetCurve2 = go.Object(1).Curve();
+
+	if (!targetCurve1 || !targetCurve2) return CRhinoCommand::failure;
+
+	//  number of boundary subdivisions for computation of the polynomials
+	// one needs to fit about 2*degree real parameters, each subdivision gives one real observation
+	int n = 1000 * degree;
+	double t0, t1, s0, s1;
+	targetCurve1->GetDomain(&t0, &t1);
+	targetCurve1->GetDomain(&s0, &s1);
+
+	std::vector<double> targetPoints1x, targetPoints1y, targetPoints1z;
+	std::vector<double> targetPoints2x, targetPoints2y, targetPoints2z;
+
+	targetPoints1x.reserve(n);
+	targetPoints1y.reserve(n);
+	targetPoints1z.reserve(n);
+
+	targetPoints2x.reserve(n);
+	targetPoints2y.reserve(n);
+	targetPoints2z.reserve(n);
+
+	std::vector<double> s(n);
+	std::vector<double> ta1(n);
+	std::vector<double> ta2(n);
+
+	for (int i = 0; i < n; i++) s[i] = (double)i / n;
+
+	targetCurve1->GetNormalizedArcLengthPoints(n, s.data(), ta1.data());
+	targetCurve2->GetNormalizedArcLengthPoints(n, s.data(), ta2.data());
+
+	for (int i = 0; i < n; i++) {
+		auto p1 = targetCurve1->PointAt(ta1[i]);
+		targetPoints1x.push_back(p1.x);
+		targetPoints1y.push_back(p1.y);
+		targetPoints1z.push_back(p1.z);
+		auto p2 = targetCurve2->PointAt(ta2[i]);
+		targetPoints2x.push_back(p2.x);
+		targetPoints2y.push_back(p2.y);
+		targetPoints2z.push_back(p2.z);
+	}
+
+	double R1 = 0.5;
+	double R2 = 1.5;
+	
+	AnnularLaplaceData kx(targetPoints1x, R1, targetPoints2x, R2, degree);
+	AnnularLaplaceData ky(targetPoints1y, R1, targetPoints2y, R2, degree);
+	AnnularLaplaceData kz(targetPoints1z, R1, targetPoints2z, R2, degree);
+
+	ON_Mesh disk = CreateUncappedCylinder(nrVerticesAround, nrVerticesVertical);
+
+	int nv = disk.VertexCount();
+	for (int i = 0; i < nv; i++) {
+		const ON_3dPoint& p = disk.Vertex(i);
+		double f = (R1 + p.z * (R2 - R1)) / sqrt(p.x * p.x + p.y * p.y);
+		auto goal = ON_3dPoint(
+			kx.eval(f * p.x, f * p.y),
+			ky.eval(f * p.x, f * p.y),
+			kz.eval(f * p.x, f * p.y)
+		);
+
 		disk.SetVertex(i, goal);
 	}
 
