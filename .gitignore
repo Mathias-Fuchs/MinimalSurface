@@ -194,3 +194,4 @@ FakesAssemblies/
 /RR.ps1
 /MinSurfaceGH/packages
 /MinSurfaceCommands
+*.swp

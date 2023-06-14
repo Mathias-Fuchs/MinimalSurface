@@ -30,7 +30,6 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_DEFAULT
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_ICON                ICON                    "C:\\Users\\Z77Pro\\Downloads\\icon03.ico"
 
 #endif    // Neutral (Default) resources
 /////////////////////////////////////////////////////////////////////////////
